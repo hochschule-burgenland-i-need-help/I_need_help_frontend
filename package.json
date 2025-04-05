@@ -9,10 +9,25 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "build:android": "echo 'skip detox build for now'",
+    "e2e:android": "echo 'skip detox tests for now'"
   },
   "jest": {
     "preset": "jest-expo"
+  },
+  "detox": {
+    "testRunner": "jest",
+    "runnerConfig": "e2e/config.json",
+    "configurations": {
+      "android.emu.debug": {
+        "type": "android.emulator",
+        "device": {
+          "avdName": "Pixel_3a_API_30_x86"
+        },
+        "app": "android/app/build/outputs/apk/debug/app-debug.apk"
+      }
+    }
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
@@ -51,7 +66,9 @@
     "jest": "^29.7.0",
     "jest-expo": "~52.0.6",
     "react-test-renderer": "18.3.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "detox": "^20.11.0",
+    "jest-circus": "^29.7.0"
   },
   "private": true
 }
