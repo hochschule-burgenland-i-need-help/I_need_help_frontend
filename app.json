@@ -37,6 +37,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "389993e6-bab7-40f4-92d1-793aefa05c18"
+      }
+    },
+    "owner": "stx85-org"
   }
 }
