@@ -44,7 +44,21 @@ export default function TabLayout() {
         name="PersonalDataScreen"
         options={{
           title: 'UserData',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="user.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.crop.circle.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="DisclaimerScreen"
+        options={{
+          title: 'Disclaimer',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="doc.text.fill" color={color} />,
         }}
       />
     </Tabs>
