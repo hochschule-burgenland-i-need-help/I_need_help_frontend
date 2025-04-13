@@ -1,0 +1,12 @@
+/.expo
+node_modules
+build
+coverage
+android
+.vscode
+
+*.md
+app.json
+package.json
+package-lock.json
+tsconfig.json
