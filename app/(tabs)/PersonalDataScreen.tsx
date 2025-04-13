@@ -235,7 +235,7 @@ export default function PersonalDataScreen() {
     useFocusEffect(
         useCallback(() => {
             loadData();
-    }, [])
+        }, [])
     );
 
     return (
