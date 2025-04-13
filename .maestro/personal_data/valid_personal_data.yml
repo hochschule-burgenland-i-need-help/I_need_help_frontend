@@ -2,27 +2,27 @@ appId: com.anonymous.ineedhelp
 name: Fill valid personal data
 ---
 - launchApp:
-    clearState: true
+      clearState: true
 - tapOn: 'UserData.*'
-- tapOn: "Name"
-- inputText: "Max Mustermann"
-- tapOn: "Alter"
-- inputText: "30"
-- tapOn: "Gewicht in Kg"
-- inputText: "65.5"
+- tapOn: 'Name'
+- inputText: 'Max Mustermann'
+- tapOn: 'Alter'
+- inputText: '30'
+- tapOn: 'Gewicht in Kg'
+- inputText: '65.5'
 - scroll
-- tapOn: "Größe in cm"
-- inputText: "175"
-- tapOn: "Bitte Blutgruppe wählen..."
+- tapOn: 'Größe in cm'
+- inputText: '175'
+- tapOn: 'Bitte Blutgruppe wählen...'
 - scrollUntilVisible:
-    element: "A+"
-    direction: DOWN
-- tapOn: "A+"
+      element: 'A+'
+      direction: DOWN
+- tapOn: 'A+'
 - scrollUntilVisible:
-    element: OK
-    direction: DOWN
+      element: OK
+      direction: DOWN
 - repeat:
-    times: 2
-    commands:
-      - tapOn: "OK"
-- assertVisible: "Die Daten wurden gespeichert!"
+      times: 2
+      commands:
+          - tapOn: 'OK'
+- assertVisible: 'Die Daten wurden gespeichert!'
