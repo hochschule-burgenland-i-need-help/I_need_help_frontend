@@ -1,0 +1,51 @@
+{
+    "DE": {
+        "country": "Germany",
+        "police": "110",
+        "ambulance": "112",
+        "fire": "112"
+    },
+    "AT": {
+        "country": "Austria",
+        "police": "133",
+        "ambulance": "144",
+        "fire": "122"
+    },
+    "IT": {
+        "country": "Italy",
+        "police": "112",
+        "ambulance": "118",
+        "fire": "115"
+    },
+    "ES": {
+        "country": "Spain",
+        "police": "091",
+        "ambulance": "061",
+        "fire": "080"
+    },
+    "HR": {
+        "country": "Croatia",
+        "police": "192",
+        "ambulance": "194",
+        "fire": "193"
+    },
+    "FR": {
+        "country": "France",
+        "police": "17",
+        "ambulance": "15",
+        "fire": "18"
+    },
+    "HU": {
+        "country": "Hungary",
+        "police": "107",
+        "ambulance": "104",
+        "fire": "105"
+    },
+    "DEFAULT": {
+        "country": "European Union (general)",
+        "police": "112",
+        "ambulance": "112",
+        "fire": "112",
+        "note": "112 ist die EU-weite Notrufnummer und funktioniert in allen Mitgliedsstaaten. Sie verbindet dich automatisch mit lokalen Einsatzkräften – oft mehrsprachig."
+    }
+}
