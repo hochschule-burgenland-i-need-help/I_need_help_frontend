@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import PersonalDataScreen from '@/app/(tabs)/PersonalDataScreen';
 import * as FileSystem from 'expo-file-system';
 import Toast from 'react-native-toast-message';
+import * as EncryptionModule from '@/utils/encryption';
 
 jest.mock('expo-router', () => ({
     useRouter: () => ({
@@ -32,9 +33,21 @@ jest.mock('@react-navigation/native', () => ({
     useFocusEffect: (cb: () => void) => cb(),
 }));
 
+jest.mock('@/utils/encryption', () => ({
+    generateKeyIfNotExists: jest.fn(),
+    encryptData: jest.fn(),
+    decryptData: jest.fn(),
+}));
+
 describe('PersonalDataScreen', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+
+        (EncryptionModule.generateKeyIfNotExists as jest.Mock).mockResolvedValue(undefined);
+        (EncryptionModule.encryptData as jest.Mock).mockImplementation((text) => Promise.resolve(`encrypted(${text})`));
+        (EncryptionModule.decryptData as jest.Mock).mockImplementation((text) =>
+            Promise.resolve(text.replace(/^encrypted\(/, '').replace(/\)$/, ''))
+        );
     });
 
     it('renders all input fields', () => {
@@ -214,32 +227,35 @@ describe('PersonalDataScreen', () => {
     });
 
     it('logs error if loading fails', async () => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         (FileSystem.getInfoAsync as jest.Mock).mockRejectedValueOnce(new Error('Fehler!'));
 
         render(<PersonalDataScreen />);
 
         await waitFor(() => {
-            expect(consoleSpy).toHaveBeenCalledWith('Fehler beim Laden:', expect.any(Error));
+            expect(Toast.show).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    text1: 'Benutzerdaten',
+                    text2: 'Fehler beim Laden der Daten! Error: Fehler!',
+                })
+            );
         });
-
-        consoleSpy.mockRestore();
     });
 
-    it('loads data on mount', async () => {
-        const data = JSON.stringify({
+    it('loads and decrypts data on mount', async () => {
+        const userData = {
             name: 'Lisa',
-            age: 30,
-            weight: 65,
-            height: 175,
+            age: '30',
+            weight: '65',
+            height: '175',
             bloodGroup: 'AB+',
-        });
+        };
+        const encrypted = `encrypted(${JSON.stringify(userData)})`;
 
         (FileSystem.getInfoAsync as jest.Mock).mockResolvedValueOnce({
             exists: true,
             uri: '/mock/documents/user_data.json',
         });
-        (FileSystem.readAsStringAsync as jest.Mock).mockResolvedValueOnce(data);
+        (FileSystem.readAsStringAsync as jest.Mock).mockResolvedValueOnce(encrypted);
 
         const { getByTestId } = render(<PersonalDataScreen />);
 

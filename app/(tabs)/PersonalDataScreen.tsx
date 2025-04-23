@@ -10,6 +10,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { Picker } from '@react-native-picker/picker';
 import * as FileSystem from 'expo-file-system';
 import Toast from 'react-native-toast-message';
+import { generateKeyIfNotExists, encryptData, decryptData } from '@/utils/encryption';
 
 const LogoImage = require('@/assets/images/i_need_help_splash.jpg');
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', '0+', '0-'];
@@ -160,7 +161,7 @@ export default function PersonalDataScreen() {
     };
 
     /**
-     * Saves the current user input data to the local file system.
+     * Saves the current user input data encrypted to the local file system.
      *
      * @param {boolean} [popup=true] - Whether to show a toast popup upon successful save.
      * @returns {Promise<void>} Resolves when the data has been saved successfully or logs an error.
@@ -175,16 +176,14 @@ export default function PersonalDataScreen() {
         };
 
         const jsonString = JSON.stringify(data, null, 2);
+        const encrypted = await encryptData(jsonString);
 
         try {
-            await FileSystem.writeAsStringAsync(userDataFile, jsonString, {
+            await FileSystem.writeAsStringAsync(userDataFile, encrypted, {
                 encoding: FileSystem.EncodingType.UTF8,
             });
 
-            console.log(`Datei gespeichert: Pfad: ${userDataFile}`);
-
             if (popup) {
-                console.log('Toast aufrufen');
                 Toast.show({
                     type: 'success',
                     text1: 'Benutzerdaten',
@@ -195,12 +194,19 @@ export default function PersonalDataScreen() {
                 });
             }
         } catch (error) {
-            console.error('Fehler beim Speichern:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Benutzerdaten',
+                text2: 'Fehler beim Speichern der Daten! ' + error,
+                position: 'top',
+                autoHide: true,
+                visibilityTime: 4000,
+            });
         }
     };
 
     /**
-     * Loads user data from the local file system and updates the input fields.
+     * Loads encrypted user data from the local file system, decrypt it and updates the input fields.
      *
      * If the file does not exist, it will initialize it with default values.
      *
@@ -214,27 +220,36 @@ export default function PersonalDataScreen() {
                 return;
             }
 
-            const content = await FileSystem.readAsStringAsync(userDataFile, {
+            const encryptedContent = await FileSystem.readAsStringAsync(userDataFile, {
                 encoding: FileSystem.EncodingType.UTF8,
             });
 
-            const data = JSON.parse(content);
+            const decrypted = await decryptData(encryptedContent);
+            const data = JSON.parse(decrypted);
 
             setName(data.name || '');
             setAge(data.age?.toString() || '');
             setWeight(data.weight?.toString() || '');
             setHeight(data.height?.toString() || '');
             setBloodGroup(data.bloodGroup || '');
-
-            console.log('Daten geladen!');
         } catch (error) {
-            console.error('Fehler beim Laden:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Benutzerdaten',
+                text2: 'Fehler beim Laden der Daten! ' + error,
+                position: 'top',
+                autoHide: true,
+                visibilityTime: 4000,
+            });
         }
     };
 
     useFocusEffect(
         useCallback(() => {
-            loadData();
+            (async () => {
+                await generateKeyIfNotExists();
+                await loadData();
+            })();
         }, [])
     );
 
