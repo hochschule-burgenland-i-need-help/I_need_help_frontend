@@ -9,7 +9,7 @@ const DisclaimerScreen = () => {
     const accept = async () => {
         await AsyncStorage.setItem('disclaimerAccepted', 'true');
         // Hier muss die Richtige "route" angegeben wernde: zb "app/index.tsx"
-        router.replace('/(tabs)/home');
+        router.replace('/PersonalDataScreen');
     };
 
     const decline = () => {

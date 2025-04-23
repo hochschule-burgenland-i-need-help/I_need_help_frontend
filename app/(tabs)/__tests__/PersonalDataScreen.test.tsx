@@ -4,6 +4,8 @@ import PersonalDataScreen from '@/app/(tabs)/PersonalDataScreen';
 import * as FileSystem from 'expo-file-system';
 import Toast from 'react-native-toast-message';
 import * as EncryptionModule from '@/utils/encryption';
+import { Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 jest.mock('expo-router', () => ({
     useRouter: () => ({
@@ -15,6 +17,8 @@ jest.mock('@/components/ui/TabBarBackground', () => ({
     useBottomTabOverflow: () => 16,
 }));
 
+jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
+
 jest.mock('expo-file-system', () => ({
     documentDirectory: '/mock/documents/',
     EncodingType: {
@@ -22,6 +26,7 @@ jest.mock('expo-file-system', () => ({
     },
     getInfoAsync: jest.fn(),
     writeAsStringAsync: jest.fn(),
+    deleteAsync: jest.fn(),
     readAsStringAsync: jest.fn(),
 }));
 
@@ -33,11 +38,21 @@ jest.mock('@react-navigation/native', () => ({
     useFocusEffect: (cb: () => void) => cb(),
 }));
 
+jest.mock(
+    '@/components/ParallaxScrollView',
+    () =>
+        ({ children }: { children: ReactNode }) =>
+            children
+);
+
 jest.mock('@/utils/encryption', () => ({
     generateKeyIfNotExists: jest.fn(),
     encryptData: jest.fn(),
     decryptData: jest.fn(),
 }));
+
+beforeAll(() => jest.spyOn(console, 'error').mockImplementation(() => {}));
+afterAll(() => (console.error as jest.Mock).mockRestore());
 
 describe('PersonalDataScreen', () => {
     beforeEach(() => {
@@ -48,22 +63,20 @@ describe('PersonalDataScreen', () => {
         (EncryptionModule.decryptData as jest.Mock).mockImplementation((text) =>
             Promise.resolve(text.replace(/^encrypted\(/, '').replace(/\)$/, ''))
         );
+
+        (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({ exists: false });
     });
 
     it('renders all input fields', () => {
         const { getByTestId } = render(<PersonalDataScreen />);
-        expect(getByTestId('inputName')).toBeTruthy();
-        expect(getByTestId('inputAge')).toBeTruthy();
-        expect(getByTestId('inputWeight')).toBeTruthy();
-        expect(getByTestId('inputHeight')).toBeTruthy();
-        expect(getByTestId('inputBloodGroup')).toBeTruthy();
+        ['inputName', 'inputAge', 'inputWeight', 'inputHeight', 'inputBloodGroup'].forEach((id) => expect(getByTestId(id)).toBeTruthy());
     });
 
     it('shows error on invalid name input', () => {
         const { getByTestId } = render(<PersonalDataScreen />);
         fireEvent.changeText(getByTestId('inputName'), '123!');
         expect(getByTestId('errorName')).toBeTruthy();
-        expect(getByTestId('errorName')).toHaveTextContent('Bitte gib einen gültigen Namen ein (keine Zahlen oder Sonderzeichen).');
+        expect(getByTestId('errorName')).toHaveTextContent('Bitte gib einen gültigen Namen ein.');
     });
 
     it('shows error on empty name input', () => {
@@ -143,7 +156,7 @@ describe('PersonalDataScreen', () => {
     it('shows error when value is above maximum (e.g. 401)', () => {
         const { getByTestId } = render(<PersonalDataScreen />);
         fireEvent.changeText(getByTestId('inputHeight'), '401');
-        expect(getByTestId('errorHeight')).toHaveTextContent('Das maximale Größe ist 400 cm.');
+        expect(getByTestId('errorHeight')).toHaveTextContent('Die maximale Größe ist 400 cm.');
     });
 
     it('accepts valid minimum value (0)', () => {
@@ -162,6 +175,14 @@ describe('PersonalDataScreen', () => {
         const { getByTestId, queryByTestId } = render(<PersonalDataScreen />);
         fireEvent.changeText(getByTestId('inputHeight'), '400');
         expect(queryByTestId('errorHeight')).toBeNull();
+    });
+
+    it('requires blood group selection', () => {
+        const { getByTestId, getByText, queryByText } = render(<PersonalDataScreen />);
+        fireEvent(getByTestId('inputBloodGroup'), 'onValueChange', '');
+        expect(getByText(/Bitte wähle eine Blutgruppe aus/)).toBeTruthy();
+        fireEvent(getByTestId('inputBloodGroup'), 'onValueChange', 'A+');
+        expect(queryByText(/Bitte wähle eine Blutgruppe aus/)).toBeNull();
     });
 
     it('shows error on empty blood group', () => {
@@ -188,10 +209,10 @@ describe('PersonalDataScreen', () => {
         fireEvent.changeText(getByTestId('inputName'), 'Max Mustermann');
         fireEvent.changeText(getByTestId('inputAge'), '25');
         fireEvent.changeText(getByTestId('inputWeight'), '80');
+        fireEvent.changeText(getByTestId('inputHeight'), '180');
         fireEvent(getByTestId('inputBloodGroup'), 'onValueChange', 'A+');
 
-        const okButton = getByText('OK');
-        fireEvent.press(okButton);
+        fireEvent.press(getByText('Speichern'));
 
         await waitFor(() => {
             expect(FileSystem.writeAsStringAsync).toHaveBeenCalled();
@@ -204,14 +225,18 @@ describe('PersonalDataScreen', () => {
         });
     });
 
-    it('creates file if it does not exist', async () => {
-        (FileSystem.getInfoAsync as jest.Mock).mockResolvedValueOnce({ exists: false });
-        (FileSystem.writeAsStringAsync as jest.Mock).mockResolvedValueOnce(undefined);
-
-        render(<PersonalDataScreen />);
-
+    it('deletes data and resets form', async () => {
+        jest.spyOn(Alert, 'alert').mockImplementation((title, msg, buttons) => {
+            if (buttons?.[1]?.onPress) buttons[1].onPress();
+        });
+        (FileSystem.deleteAsync as jest.Mock).mockResolvedValue(undefined);
+        jest.spyOn(AsyncStorage, 'clear').mockResolvedValue(undefined);
+        const { getByTestId, getByText } = render(<PersonalDataScreen />);
+        fireEvent.changeText(getByTestId('inputName'), 'Test');
+        fireEvent.press(getByText('Löschen'));
         await waitFor(() => {
-            expect(FileSystem.writeAsStringAsync).toHaveBeenCalled();
+            expect(FileSystem.deleteAsync).toHaveBeenCalledWith('/mock/documents/user_data.json', { idempotent: true });
+            expect(AsyncStorage.clear).toHaveBeenCalled();
         });
     });
 

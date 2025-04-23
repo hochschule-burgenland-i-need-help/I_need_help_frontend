@@ -2,7 +2,7 @@ import { StyleSheet, View, Pressable, Text } from 'react-native';
 
 type Props = {
     label: string;
-    theme?: 'primary' | 'secondary';
+    theme?: 'primary' | 'secondary' | 'third';
     onPress?: () => void;
     disabled?: boolean;
 };
@@ -36,6 +36,16 @@ const themeStyles = {
         },
         label: {
             color: '#444',
+        },
+    },
+    third: {
+        button: {
+            backgroundColor: 'red',
+            borderWidth: 1,
+            borderColor: 'red',
+        },
+        label: {
+            color: '#fff',
         },
     },
 };
