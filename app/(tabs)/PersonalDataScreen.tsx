@@ -2,7 +2,7 @@ import Button from '@/components/Button';
 import React from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
-import { Text, StyleSheet, Image } from 'react-native';
+import { Text, StyleSheet, Image, Alert, View, Pressable } from 'react-native';
 import { TextInput as PaperInput } from 'react-native-paper';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedView } from '@/components/ThemedView';
@@ -11,6 +11,7 @@ import { Picker } from '@react-native-picker/picker';
 import * as FileSystem from 'expo-file-system';
 import Toast from 'react-native-toast-message';
 import { generateKeyIfNotExists, encryptData, decryptData } from '@/utils/encryption';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LogoImage = require('@/assets/images/i_need_help_splash.jpg');
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', '0+', '0-'];
@@ -38,7 +39,7 @@ export default function PersonalDataScreen() {
     const [errorHeight, setErrorHeight] = useState<string | null>(null);
     const [errorBloodGroup, setErrorBloodGroup] = useState<string | null>(null);
 
-    const hasErrors = [errorName, errorAge, errorWeight, errorBloodGroup].some((e) => e !== null);
+    const hasErrors = [errorName, errorAge, errorWeight, errorHeight, errorBloodGroup].some((e) => e !== null);
 
     /**
      * Validates the user's name input and updates state and error messages accordingly.
@@ -53,7 +54,7 @@ export default function PersonalDataScreen() {
         if (value.trim() === '') {
             setErrorName('Name darf nicht leer sein.');
         } else if (!nameRegex.test(value)) {
-            setErrorName('Bitte gib einen gültigen Namen ein (keine Zahlen oder Sonderzeichen).');
+            setErrorName('Bitte gib einen gültigen Namen ein.');
         } else {
             setErrorName(null);
         }
@@ -128,7 +129,7 @@ export default function PersonalDataScreen() {
         } else if (intVal < 0) {
             setErrorHeight('Die Mindestgröße ist 0 cm.');
         } else if (intVal > 400) {
-            setErrorHeight('Das maximale Größe ist 400 cm.');
+            setErrorHeight('Die maximale Größe ist 400 cm.');
         } else {
             setErrorHeight(null);
         }
@@ -161,6 +162,48 @@ export default function PersonalDataScreen() {
     };
 
     /**
+     * Prompts the user with a confirmation alert before deleting all saved data.
+     * If confirmed, it triggers the `deleteAllData` function.
+     */
+    const confirmDelete = () => {
+        Alert.alert(
+            'Daten löschen?',
+            'Möchten Sie wirklich alle Gesundheitsdaten unwiderruflich löschen?',
+            [
+                { text: 'Abbruch', style: 'cancel' },
+                { text: 'Ja', onPress: () => deleteAllData() },
+            ],
+            { cancelable: true }
+        );
+    };
+
+    /**
+     * Deletes all stored user data including encrypted file and local storage.
+     * Resets all input fields and optionally shows a confirmation popup.
+     *
+     * @param {boolean} [showPopup=true] - Whether to display a confirmation alert after deletion.
+     * @returns {Promise<void>} Resolves when deletion is complete or logs an error.
+     */
+    const deleteAllData = async (showPopup: boolean = true) => {
+        try {
+            await FileSystem.deleteAsync(userDataFile, { idempotent: true });
+            await AsyncStorage.clear();
+            setName('');
+            setAge('');
+            setWeight('');
+            setHeight('');
+            setBloodGroup('');
+            resetErrors();
+            if (showPopup) {
+                Alert.alert('Daten gelöscht', 'Alle Gesundheitsdaten wurden entfernt.');
+            }
+        } catch (error) {
+            console.error('Fehler beim Löschen der Daten:', error);
+            Alert.alert('Fehler', 'Die Daten konnten nicht gelöscht werden.');
+        }
+    };
+
+    /**
      * Saves the current user input data encrypted to the local file system.
      *
      * @param {boolean} [popup=true] - Whether to show a toast popup upon successful save.
@@ -190,7 +233,7 @@ export default function PersonalDataScreen() {
                     text2: 'Die Daten wurden gespeichert!',
                     position: 'top',
                     autoHide: true,
-                    visibilityTime: 4000,
+                    visibilityTime: 3000,
                 });
             }
         } catch (error) {
@@ -215,7 +258,7 @@ export default function PersonalDataScreen() {
     const loadData = async () => {
         try {
             const fileInfo = await FileSystem.getInfoAsync(userDataFile);
-            if (fileInfo === null || !fileInfo?.exists) {
+            if (!fileInfo?.exists) {
                 await saveData(false);
                 return;
             }
@@ -262,79 +305,132 @@ export default function PersonalDataScreen() {
                     Meine Stammdaten
                 </ThemedText>
 
-                <PaperInput
-                    testID="inputName"
-                    label="Name"
-                    value={name}
-                    onChangeText={validateName}
-                    mode="flat"
-                    error={!!errorName}
-                    textColor="#444"
-                    style={styles.input}
-                />
+                <View style={styles.inputRow}>
+                    <PaperInput
+                        testID="inputName"
+                        label="Name"
+                        value={name}
+                        onChangeText={validateName}
+                        mode="flat"
+                        error={!!errorName}
+                        textColor="#444"
+                        style={styles.inputField}
+                    />
+                    <Pressable
+                        onPress={() => {
+                            setName('');
+                            setErrorName(null);
+                        }}
+                        style={styles.clearIcon}>
+                        <Text style={styles.clearText}>🗑️</Text>
+                    </Pressable>
+                </View>
                 {errorName && (
                     <Text testID="errorName" style={styles.errorText}>
                         {errorName}
                     </Text>
                 )}
-                <PaperInput
-                    testID="inputAge"
-                    label="Alter"
-                    value={age}
-                    onChangeText={validateAge}
-                    mode="flat"
-                    error={!!errorAge}
-                    textColor="#444"
-                    style={styles.input}
-                    keyboardType="numeric"
-                />
+                <View style={styles.inputRow}>
+                    <PaperInput
+                        testID="inputAge"
+                        label="Alter"
+                        value={age}
+                        onChangeText={validateAge}
+                        mode="flat"
+                        error={!!errorAge}
+                        keyboardType="numeric"
+                        textColor="#444"
+                        style={styles.inputField}
+                    />
+                    <Pressable
+                        onPress={() => {
+                            setAge('');
+                            setErrorAge(null);
+                        }}
+                        style={styles.clearIcon}>
+                        <Text style={styles.clearText}>🗑️</Text>
+                    </Pressable>
+                </View>
                 {errorAge && (
                     <Text testID="errorAge" style={styles.errorText}>
                         {errorAge}
                     </Text>
                 )}
-                <PaperInput
-                    testID="inputWeight"
-                    label="Gewicht in Kg"
-                    value={weight}
-                    onChangeText={validateWeight}
-                    mode="flat"
-                    error={!!errorWeight}
-                    textColor="#444"
-                    style={styles.input}
-                    keyboardType="decimal-pad"
-                />
+
+                <View style={styles.inputRow}>
+                    <PaperInput
+                        testID="inputWeight"
+                        label="Gewicht in Kg"
+                        value={weight}
+                        onChangeText={validateWeight}
+                        mode="flat"
+                        error={!!errorWeight}
+                        keyboardType="decimal-pad"
+                        textColor="#444"
+                        style={styles.inputField}
+                    />
+                    <Pressable
+                        onPress={() => {
+                            setWeight('');
+                            setErrorWeight(null);
+                        }}
+                        style={styles.clearIcon}>
+                        <Text style={styles.clearText}>🗑️</Text>
+                    </Pressable>
+                </View>
                 {errorWeight && (
                     <Text testID="errorWeight" style={styles.errorText}>
                         {errorWeight}
                     </Text>
                 )}
-                <PaperInput
-                    testID="inputHeight"
-                    label="Größe in cm"
-                    value={height}
-                    onChangeText={validateHeight}
-                    mode="flat"
-                    error={!!errorHeight}
-                    textColor="#444"
-                    style={styles.input}
-                    keyboardType="numeric"
-                />
+
+                <View style={styles.inputRow}>
+                    <PaperInput
+                        testID="inputHeight"
+                        label="Größe in cm"
+                        value={height}
+                        onChangeText={validateHeight}
+                        mode="flat"
+                        error={!!errorHeight}
+                        keyboardType="numeric"
+                        textColor="#444"
+                        style={styles.inputField}
+                    />
+                    <Pressable
+                        onPress={() => {
+                            setHeight('');
+                            setErrorHeight(null);
+                        }}
+                        style={styles.clearIcon}>
+                        <Text style={styles.clearText}>🗑️</Text>
+                    </Pressable>
+                </View>
                 {errorHeight && (
                     <Text testID="errorHeight" style={styles.errorText}>
                         {errorHeight}
                     </Text>
                 )}
-                <Picker
-                    testID="inputBloodGroup"
-                    selectedValue={bloodGroup}
-                    onValueChange={validateBloodgroup}
-                    style={[styles.input, errorBloodGroup && styles.invalidInput]}>
-                    <Picker.Item label="Bitte Blutgruppe wählen..." value="" />
-                    {bloodGroups.map((group) => (
-                        <Picker.Item key={group} label={group} value={group} />
-                    ))}
-                </Picker>
+
+                <View style={styles.inputRow}>
+                    <Picker
+                        testID="inputBloodGroup"
+                        selectedValue={bloodGroup}
+                        onValueChange={validateBloodgroup}
+                        style={[styles.pickerField, errorBloodGroup && styles.invalidInput]}>
+                        <Picker.Item label="Bitte Blutgruppe wählen..." value="" />
+                        {bloodGroups.map((group) => (
+                            <Picker.Item key={group} label={group} value={group} />
+                        ))}
+                    </Picker>
+                    <Pressable
+                        onPress={() => {
+                            setBloodGroup('');
+                            setErrorBloodGroup(null);
+                        }}
+                        style={styles.clearIcon}>
+                        <Text style={styles.clearText}>🗑️</Text>
+                    </Pressable>
+                </View>
                 {errorBloodGroup && (
                     <Text testID="errorBloodGroup" style={styles.errorText}>
                         {errorBloodGroup}
@@ -344,7 +440,7 @@ export default function PersonalDataScreen() {
 
             <ThemedView style={styles.buttonContainer}>
                 <Button
-                    label="OK"
+                    label="Speichern"
                     theme="primary"
                     disabled={hasErrors}
                     onPress={() => {
@@ -352,13 +448,8 @@ export default function PersonalDataScreen() {
                         resetErrors();
                     }}
                 />
-                <Button
-                    label="Abbruch"
-                    theme="secondary"
-                    onPress={() => {
-                        resetErrors();
-                    }}
-                />
+                <Button label="Löschen" theme="third" onPress={confirmDelete} disabled={false} />
+                <Button label="Abbruch" theme="secondary" onPress={resetErrors} />
             </ThemedView>
         </ParallaxScrollView>
     );
@@ -373,6 +464,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         width: '100%',
         alignItems: 'center',
+        marginVertical: 10,
     },
     logo: {
         width: 100,
@@ -385,29 +477,44 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginVertical: 20,
     },
-    input: {
+    inputRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
         width: '90%',
+        marginVertical: 8,
+    },
+    inputField: {
+        flex: 1,
         height: 58,
         backgroundColor: '#fff',
         borderBottomWidth: 1,
         borderBottomColor: '#00bfff',
         borderRadius: 5,
         padding: 12,
-        marginVertical: 8,
         fontSize: 16,
     },
-    invalidInput: {
-        width: '90%',
+    pickerField: {
+        flex: 1,
+        height: 58,
         backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#00bfff',
+        borderRadius: 5,
+        marginRight: 8,
+    },
+    clearIcon: {
+        marginLeft: 8,
+    },
+    clearText: {
+        fontSize: 20,
+    },
+    invalidInput: {
         borderBottomWidth: 3,
         borderBottomColor: 'red',
-        borderRadius: 5,
-        padding: 12,
-        marginVertical: 8,
-        fontSize: 16,
     },
     errorText: {
         color: 'red',
         marginTop: 5,
+        marginBottom: -5,
     },
 });

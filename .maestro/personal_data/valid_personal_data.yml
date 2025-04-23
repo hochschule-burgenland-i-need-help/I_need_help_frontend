@@ -19,10 +19,14 @@ name: Fill valid personal data
       direction: DOWN
 - tapOn: 'A+'
 - scrollUntilVisible:
-      element: OK
+      element: Speichern
       direction: DOWN
 - repeat:
       times: 2
       commands:
-          - tapOn: 'OK'
+          - tapOn: 'Speichern'
 - assertVisible: 'Die Daten wurden gespeichert!'
+- tapOn: Löschen
+- tapOn: Ja
+- assertVisible: 'Daten gelöscht'
+- tapOn: OK
