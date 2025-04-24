@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import DisclaimerScreen from '@/app/(tabs)/DisclaimerScreen'; // wenn du Pfad-Aliase nutzt
+import DisclaimerScreen from '@/app/(modals)/DisclaimerScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 

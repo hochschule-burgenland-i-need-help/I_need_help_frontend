@@ -3,7 +3,7 @@ name: Fill valid personal data
 ---
 - launchApp:
       clearState: true
-- tapOn: 'UserData.*'
+- tapOn: 'AKZEPTIEREN'
 - tapOn: 'Name'
 - inputText: 'Max Mustermann'
 - tapOn: 'Alter'
