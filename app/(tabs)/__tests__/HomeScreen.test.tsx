@@ -26,7 +26,7 @@ describe('Home Screen', () => {
         const rettungButton = getByText('Rettung 🚑');
         fireEvent.press(rettungButton);
 
-        expect(mockReplace).toHaveBeenCalledWith('/(tabs)/explore'); //TODO replace with sub page Rettung ~ Jan
+        expect(mockReplace).toHaveBeenCalledWith('/(tabs)/HomeScreen'); //TODO replace with sub page Rettung ~ Jan
     });
 
     it('sollte den Router zu "Polizei" weiterleiten, wenn der Polizei-Button gedrückt wird', () => {
@@ -37,7 +37,7 @@ describe('Home Screen', () => {
         const polizeiButton = getByText('Polizei 🚓');
         fireEvent.press(polizeiButton);
 
-        expect(mockReplace).toHaveBeenCalledWith('/(tabs)/explore'); //TODO replace with sub page Polizei ~ Jan
+        expect(mockReplace).toHaveBeenCalledWith('/(tabs)/HomeScreen'); //TODO replace with sub page Polizei ~ Jan
     });
 
     it('sollte den Router zu "Feuerwehr" weiterleiten, wenn der Feuerwehr-Button gedrückt wird', () => {
@@ -48,6 +48,6 @@ describe('Home Screen', () => {
         const feuerwehrButton = getByText('Feuerwehr 🚒');
         fireEvent.press(feuerwehrButton);
 
-        expect(mockReplace).toHaveBeenCalledWith('/(tabs)/explore'); //TODO replace with sub page Feuerwehr ~ Jan
+        expect(mockReplace).toHaveBeenCalledWith('/(tabs)/HomeScreen'); //TODO replace with sub page Feuerwehr ~ Jan
     });
 });

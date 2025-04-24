@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import PersonalDataScreen from '@/app/(tabs)/PersonalDataScreen';
 import * as FileSystem from 'expo-file-system';

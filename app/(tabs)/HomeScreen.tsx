@@ -11,13 +11,13 @@ const HomeScreen = () => {
     const router = useRouter();
 
     const routeRettung = async () => {
-        router.replace('/(tabs)/explore'); //TODO replace with sub page Rettung ~ Jan
+        router.replace('/(tabs)/HomeScreen'); //TODO replace with sub page Rettung ~ Jan
     };
     const routeFeuerwehr = async () => {
-        router.replace('/(tabs)/explore'); //TODO replace with sub page Feuerwehr ~ Jan
+        router.replace('/(tabs)/HomeScreen'); //TODO replace with sub page Feuerwehr ~ Jan
     };
     const routePolizei = async () => {
-        router.replace('/(tabs)/explore'); //TODO replace with sub page Polizei ~ Jan
+        router.replace('/(tabs)/HomeScreen'); //TODO replace with sub page Polizei ~ Jan
     };
 
     return (
