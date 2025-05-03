@@ -53,6 +53,15 @@ One of those are the e2e tests with Maestro. Therefor you need to follow next st
 
 The pre-commit hook will start the script defined in `.husky/pre-commit`
 
+## Pre-Push Security Check
+
+Before each push, a security check runs automatically
+to block critical vulnerabilities from entering the remote repository:
+
+1. Runs: `npm audit --audit-level=critical`
+2. Behavior:
+   If critical vulnerabilities are found, the push is aborted and an error message is shown.
+
 ## Android Emulator
 
 For installing the emulator follow the instructions [here](https://docs.expo.dev/workflow/android-studio-emulator/).
