@@ -1,3 +1,4 @@
 npx lint-staged
+npm audit --audit-level=critical
 npm run test
 npm run e2e

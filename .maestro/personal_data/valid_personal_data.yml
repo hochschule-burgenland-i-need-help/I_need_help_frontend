@@ -3,6 +3,9 @@ name: Fill valid personal data
 ---
 - launchApp:
       clearState: true
+- extendedWaitUntil:
+      visible: 'AKZEPTIEREN'
+      timeout: 20000
 - tapOn: 'AKZEPTIEREN'
 - tapOn: 'Name'
 - inputText: 'Max Mustermann'
