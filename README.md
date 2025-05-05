@@ -62,6 +62,28 @@ to block critical vulnerabilities from entering the remote repository:
 2. Behavior:
    If critical vulnerabilities are found, the push is aborted and an error message is shown.
 
+## Pre-Commit Secret Check
+
+To ensure **no sensitive information** ever makes it into the repo, we use SecretLint in our Husky hook:
+
+1. **Install dev dependencies**
+
+    ```bash
+    npm install --save-dev secretlint @secretlint/secretlint-rule-preset-recommend
+
+    ```
+
+2. **Create configuration file**
+   In the project root, add a file named .secretlintrc.json with the following content:
+
+{
+"rules": [
+{
+"id": "@secretlint/secretlint-rule-preset-recommend"
+}
+]
+}
+
 ## Android Emulator
 
 For installing the emulator follow the instructions [here](https://docs.expo.dev/workflow/android-studio-emulator/).
