@@ -1,4 +1,0 @@
-appId: com.anonymous.ineedhelp
-name: Personal Data Form Flow
----
-- runFlow: 'personal_data/valid_personal_data.yml'

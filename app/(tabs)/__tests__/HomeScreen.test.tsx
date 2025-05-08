@@ -50,4 +50,15 @@ describe('Home Screen', () => {
 
         expect(mockReplace).toHaveBeenCalledWith('/(tabs)/HomeScreen'); //TODO replace with sub page Feuerwehr ~ Jan
     });
+
+    it('sollte den Router zu Emergency weiterleiten, wenn der SOS-Button gedrückt wird', () => {
+        const mockReplace = jest.fn();
+        jest.spyOn(require('expo-router'), 'useRouter').mockReturnValue({ replace: mockReplace });
+
+        const { getByText } = render(<HomeScreen />);
+        const button = getByText('SOS');
+        fireEvent.press(button);
+
+        expect(mockReplace).toHaveBeenCalledWith('/(modals)/EmergencyScreen');
+    });
 });

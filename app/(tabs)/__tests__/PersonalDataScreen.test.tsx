@@ -6,11 +6,10 @@ import Toast from 'react-native-toast-message';
 import * as EncryptionModule from '@/utils/encryption';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 jest.mock('expo-router', () => ({
-    useRouter: () => ({
-        replace: jest.fn(),
-    }),
+    useRouter: jest.fn(),
 }));
 
 jest.mock('@/components/ui/TabBarBackground', () => ({
@@ -55,7 +54,13 @@ beforeAll(() => jest.spyOn(console, 'error').mockImplementation(() => {}));
 afterAll(() => (console.error as jest.Mock).mockRestore());
 
 describe('PersonalDataScreen', () => {
+    const mockReplace = jest.fn();
+
     beforeEach(() => {
+        (useRouter as jest.Mock).mockReturnValue({
+            replace: mockReplace,
+        });
+
         jest.clearAllMocks();
 
         (EncryptionModule.generateKeyIfNotExists as jest.Mock).mockResolvedValue(undefined);
@@ -222,6 +227,7 @@ describe('PersonalDataScreen', () => {
                     text2: 'Die Daten wurden gespeichert!',
                 })
             );
+            expect(mockReplace).toHaveBeenCalledWith('/(tabs)/HomeScreen');
         });
     });
 
