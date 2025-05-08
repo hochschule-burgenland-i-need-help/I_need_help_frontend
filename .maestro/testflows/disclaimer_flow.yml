@@ -1,0 +1,9 @@
+appId: com.anonymous.ineedhelp
+name: Accept disclaimer
+---
+- launchApp:
+      clearState: true
+- extendedWaitUntil:
+      visible: 'AKZEPTIEREN'
+      timeout: 20000
+- tapOn: 'AKZEPTIEREN'

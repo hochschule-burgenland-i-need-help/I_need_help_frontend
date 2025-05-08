@@ -12,6 +12,7 @@ import * as FileSystem from 'expo-file-system';
 import Toast from 'react-native-toast-message';
 import { generateKeyIfNotExists, encryptData, decryptData } from '@/utils/encryption';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 const LogoImage = require('@/assets/images/i_need_help_splash.jpg');
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', '0+', '0-'];
@@ -26,6 +27,7 @@ const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', '0+', '0-'];
  * @returns {JSX.Element} The rendered screen for entering and managing personal data.
  */
 export default function PersonalDataScreen() {
+    const router = useRouter();
     const userDataFile = FileSystem.documentDirectory + 'user_data.json';
 
     const [name, setName] = useState('');
@@ -40,6 +42,10 @@ export default function PersonalDataScreen() {
     const [errorBloodGroup, setErrorBloodGroup] = useState<string | null>(null);
 
     const hasErrors = [errorName, errorAge, errorWeight, errorHeight, errorBloodGroup].some((e) => e !== null);
+
+    const routeHome = async () => {
+        router.replace('/(tabs)/HomeScreen');
+    };
 
     /**
      * Validates the user's name input and updates state and error messages accordingly.
@@ -207,9 +213,9 @@ export default function PersonalDataScreen() {
      * Saves the current user input data encrypted to the local file system.
      *
      * @param {boolean} [popup=true] - Whether to show a toast popup upon successful save.
-     * @returns {Promise<void>} Resolves when the data has been saved successfully or logs an error.
+     * @returns {Promise<Boolean>} Resolves when the data has been saved successfully or logs an error.
      */
-    const saveData = async (popup: boolean = true) => {
+    const saveData = async (popup: boolean = true): Promise<boolean> => {
         const data = {
             name: name,
             age: age,
@@ -236,6 +242,7 @@ export default function PersonalDataScreen() {
                     visibilityTime: 3000,
                 });
             }
+            return true;
         } catch (error) {
             Toast.show({
                 type: 'error',
@@ -246,6 +253,8 @@ export default function PersonalDataScreen() {
                 visibilityTime: 4000,
             });
         }
+
+        return false;
     };
 
     /**
@@ -443,9 +452,12 @@ export default function PersonalDataScreen() {
                     label="Speichern"
                     theme="primary"
                     disabled={hasErrors}
-                    onPress={() => {
-                        saveData();
-                        resetErrors();
+                    onPress={async () => {
+                        const retval = await saveData();
+                        if (retval === true) {
+                            resetErrors();
+                            routeHome();
+                        }
                     }}
                 />
                 <Button label="Löschen" theme="third" onPress={confirmDelete} disabled={false} />

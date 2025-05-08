@@ -1,0 +1,13 @@
+appId: com.anonymous.ineedhelp
+name: Check Emergency Screen
+---
+- tapOn: 'SOS'
+- assertVisible: 'Max Mustermann'
+- assertVisible: '30'
+- assertVisible: '65.5 kg'
+- assertVisible: '175 cm'
+- assertVisible: 'A+'
+- retry:
+      maxRetries: 3
+      commands:
+          - tapOn: 'Schließen'

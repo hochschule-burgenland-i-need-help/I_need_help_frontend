@@ -1,12 +1,6 @@
 appId: com.anonymous.ineedhelp
-name: Fill valid personal data
+name: Save personal data
 ---
-- launchApp:
-      clearState: true
-- extendedWaitUntil:
-      visible: 'AKZEPTIEREN'
-      timeout: 20000
-- tapOn: 'AKZEPTIEREN'
 - tapOn: 'Name'
 - inputText: 'Max Mustermann'
 - tapOn: 'Alter'
@@ -24,12 +18,8 @@ name: Fill valid personal data
 - scrollUntilVisible:
       element: Speichern
       direction: DOWN
-- repeat:
-      times: 2
+- retry:
+      maxRetries: 3
       commands:
           - tapOn: 'Speichern'
-- assertVisible: 'Die Daten wurden gespeichert!'
-- tapOn: Löschen
-- tapOn: Ja
-- assertVisible: 'Daten gelöscht'
-- tapOn: OK
+          - assertVisible: 'Die Daten wurden gespeichert!'

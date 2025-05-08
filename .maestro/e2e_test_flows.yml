@@ -1,0 +1,7 @@
+appId: com.anonymous.ineedhelp
+name: Personal Data Form Flow
+---
+- runFlow: 'testflows/disclaimer_flow.yml'
+- runFlow: 'testflows/save_personal_data_flow.yml'
+- runFlow: 'testflows/emergency_flow.yml'
+- runFlow: 'testflows/delete_personal_data_flow.yml'
