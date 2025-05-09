@@ -2,6 +2,10 @@ appId: com.anonymous.ineedhelp
 name: Save personal data
 ---
 - tapOn: 'Name'
+- retry:
+      maxRetries: 2
+      commands:
+          - tapOn: 'Name'
 - inputText: 'Max Mustermann'
 - tapOn: 'Alter'
 - inputText: '30'

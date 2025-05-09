@@ -34,6 +34,24 @@ describe('Button Component', () => {
         expect(label.props.style).toEqual(expect.arrayContaining([expect.objectContaining({ color: '#444' })]));
     });
 
+    it('applies third theme styles', () => {
+        const { getByText } = render(<Button label="Third" theme="third" />);
+        const label = getByText('Third');
+        expect(label.props.style).toEqual(expect.arrayContaining([expect.objectContaining({ color: '#fff' })]));
+    });
+
+    it('applies fourth theme styles', () => {
+        const { getByText } = render(<Button label="Fourth" theme="fourth" />);
+        const label = getByText('Fourth');
+        expect(label.props.style).toEqual(expect.arrayContaining([expect.objectContaining({ color: '#444' })]));
+    });
+
+    it('applies sos theme styles', () => {
+        const { getByText } = render(<Button label="SOS" theme="sos" />);
+        const label = getByText('SOS');
+        expect(label.props.style).toEqual(expect.arrayContaining([expect.objectContaining({ color: '#fff' })]));
+    });
+
     it('applies disabled style when disabled', () => {
         const { getByText } = render(<Button label="Disabled" disabled={true} />);
         const label = getByText('Disabled');

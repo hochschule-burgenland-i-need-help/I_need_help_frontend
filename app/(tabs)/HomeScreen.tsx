@@ -1,5 +1,6 @@
-import { View, Image, StyleSheet, Button, Text, Pressable } from 'react-native';
 import React, { useEffect, useState } from 'react';
+import Button from '@/components/Button';
+import { View, Image, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { booleanPointInPolygon, point } from '@turf/turf';
@@ -75,19 +76,13 @@ const HomeScreen = () => {
             <View style={styles.container}>
                 <Text style={styles.text}>Hallo, Max Mustermann!</Text>
                 <View style={styles.button}>
-                    <Button title="Rettung 🚑" onPress={routeRettung} color="red" />
-                    <Button title="Polizei 🚓" onPress={routePolizei} color="blue" />
-                    <Button title="Feuerwehr 🚒" onPress={routeFeuerwehr} color="green" />
+                    <Button theme="third" label="Rettung 🚑" onPress={routeRettung} />
+                    <Button theme="primary" label="Polizei 🚓" onPress={routePolizei} />
+                    <Button theme="fourth" label="Feuerwehr 🚒" onPress={routeFeuerwehr} />
                 </View>
             </View>
-            <View style={styles.buttonContainer}>
-                <Pressable
-                    style={styles.sosButton}
-                    onPress={() => {
-                        routeEmergency();
-                    }}>
-                    <Text style={styles.sosText}>SOS</Text>
-                </Pressable>
+            <View style={[styles.button, { marginBottom: 20 }]}>
+                <Button theme="sos" label="SOS" onPress={routeEmergency} />
             </View>
         </View>
     );
@@ -110,11 +105,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#e71d1d',
         alignItems: 'center',
     },
-    buttonContainer: {
-        width: '100%',
-        alignItems: 'center',
-        marginVertical: 10,
-    },
     logo: {
         width: 100,
         height: 100,
@@ -127,21 +117,7 @@ const styles = StyleSheet.create({
     },
     button: {
         flexDirection: 'column',
-        fontSize: 32,
         gap: 10,
-    },
-    sosButton: {
-        width: '90%',
-        height: 65,
-        justifyContent: 'center',
-        backgroundColor: 'black',
-        borderRadius: 10,
-        marginBottom: 20,
-    },
-    sosText: {
-        textAlign: 'center',
-        color: 'white',
-        fontSize: 38,
-        fontWeight: 'bold',
+        alignItems: 'center',
     },
 });
