@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Button, Alert, BackHandler } from 'react-native';
+import Button from '@/components/Button';
+import { View, Text, StyleSheet, Alert, BackHandler } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
@@ -23,8 +24,8 @@ const DisclaimerScreen = () => {
             <Text style={styles.heading}>Nutzungsbedingungen</Text>
             <Text style={styles.text}>[Hier steht der rechtlich geprüfte Disclaimer-Text. Aktuell nur ein Platzhalter.]</Text>
             <View style={styles.buttons}>
-                <Button title="Akzeptieren" onPress={accept} />
-                <Button title="Ablehnen" onPress={decline} color="red" />
+                <Button theme="primary" label="Akzeptieren" onPress={accept} />
+                <Button theme="third" label="Ablehnen" onPress={decline} />
             </View>
         </View>
     );
