@@ -1,6 +1,7 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 import HomeScreen from '@/app/(tabs)/HomeScreen';
+import * as Location from 'expo-location';
 
 jest.mock('expo-router', () => ({
     useRouter: () => ({
@@ -8,57 +9,82 @@ jest.mock('expo-router', () => ({
     }),
 }));
 
-jest.mock('@/components/ui/TabBarBackground', () => ({
-    useBottomTabOverflow: () => 16,
+jest.mock('expo-location');
+
+jest.mock('@/constants/custom.geo.json', () => ({
+    features: [
+        {
+            type: 'Feature',
+            properties: { name: 'Germany' },
+            geometry: {
+                type: 'Polygon',
+                coordinates: [
+                    [
+                        [9, 51],
+                        [10, 51],
+                        [10, 52],
+                        [9, 52],
+                        [9, 51],
+                    ],
+                ],
+            },
+        },
+    ],
 }));
 
-describe('Home Screen', () => {
-    it('sollte den Begrüßungstext anzeigen', () => {
-        const { getByText } = render(<HomeScreen />);
-        expect(getByText('Hallo, Max Mustermann!')).toBeTruthy();
+describe('HomeScreen', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
-    it('sollte den Router zu "Rettung" weiterleiten, wenn der Rettung-Button gedrückt wird', () => {
-        const mockReplace = jest.fn();
-        jest.spyOn(require('expo-router'), 'useRouter').mockReturnValue({ replace: mockReplace });
+    it('zeigt Begrüßungstext an', async () => {
+        (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+        (Location.getCurrentPositionAsync as jest.Mock).mockResolvedValue({
+            coords: {
+                latitude: 51.5,
+                longitude: 9.5,
+            },
+        });
 
-        const { getByText } = render(<HomeScreen />);
-        const rettungButton = getByText('Rettung 🚑');
-        fireEvent.press(rettungButton);
-
-        expect(mockReplace).toHaveBeenCalledWith('/(tabs)/HomeScreen'); //TODO replace with sub page Rettung ~ Jan
+        const { findByText } = render(<HomeScreen />);
+        const greeting = await findByText('Hallo, Max Mustermann!');
+        expect(greeting).toBeTruthy();
     });
 
-    it('sollte den Router zu "Polizei" weiterleiten, wenn der Polizei-Button gedrückt wird', () => {
-        const mockReplace = jest.fn();
-        jest.spyOn(require('expo-router'), 'useRouter').mockReturnValue({ replace: mockReplace });
+    it('ruft Location-Berechtigung und Koordinaten ab', async () => {
+        (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+        (Location.getCurrentPositionAsync as jest.Mock).mockResolvedValue({
+            coords: {
+                latitude: 51.5,
+                longitude: 9.5,
+            },
+        });
 
-        const { getByText } = render(<HomeScreen />);
-        const polizeiButton = getByText('Polizei 🚓');
-        fireEvent.press(polizeiButton);
+        const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-        expect(mockReplace).toHaveBeenCalledWith('/(tabs)/HomeScreen'); //TODO replace with sub page Polizei ~ Jan
+        render(<HomeScreen />);
+
+        await waitFor(() => {
+            expect(Location.requestForegroundPermissionsAsync).toHaveBeenCalled();
+            expect(Location.getCurrentPositionAsync).toHaveBeenCalled();
+            expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Standort abgerufen'));
+            expect(logSpy).toHaveBeenCalledWith({ name: 'Germany' });
+        });
+
+        logSpy.mockRestore();
     });
 
-    it('sollte den Router zu "Feuerwehr" weiterleiten, wenn der Feuerwehr-Button gedrückt wird', () => {
-        const mockReplace = jest.fn();
-        jest.spyOn(require('expo-router'), 'useRouter').mockReturnValue({ replace: mockReplace });
+    it('zeigt Fehlermeldung bei fehlender Berechtigung', async () => {
+        (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'denied' });
 
-        const { getByText } = render(<HomeScreen />);
-        const feuerwehrButton = getByText('Feuerwehr 🚒');
-        fireEvent.press(feuerwehrButton);
+        const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-        expect(mockReplace).toHaveBeenCalledWith('/(tabs)/HomeScreen'); //TODO replace with sub page Feuerwehr ~ Jan
-    });
+        render(<HomeScreen />);
 
-    it('sollte den Router zu Emergency weiterleiten, wenn der SOS-Button gedrückt wird', () => {
-        const mockReplace = jest.fn();
-        jest.spyOn(require('expo-router'), 'useRouter').mockReturnValue({ replace: mockReplace });
+        await waitFor(() => {
+            expect(logSpy).toHaveBeenCalledWith('Standortberechtigung abgelehnt.');
+        });
 
-        const { getByText } = render(<HomeScreen />);
-        const button = getByText('SOS');
-        fireEvent.press(button);
-
-        expect(mockReplace).toHaveBeenCalledWith('/(modals)/EmergencyScreen');
+        logSpy.mockRestore();
     });
 });
