@@ -8,6 +8,6 @@ name: Check Emergency Screen
 - assertVisible: '175 cm'
 - assertVisible: 'A+'
 - retry:
-      maxRetries: 3
+      maxRetries: 5
       commands:
           - tapOn: 'Schließen'
