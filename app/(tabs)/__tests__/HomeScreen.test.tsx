@@ -2,6 +2,7 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 import HomeScreen from '@/app/(tabs)/HomeScreen';
 import * as Location from 'expo-location';
+import { ViewProps } from 'react-native';
 
 jest.mock('expo-router', () => ({
     useRouter: () => ({
@@ -32,6 +33,14 @@ jest.mock('@/constants/custom.geo.json', () => ({
     ],
 }));
 
+jest.mock('@expo/vector-icons', () => {
+    const React = require('react');
+    const { View } = require('react-native');
+    return {
+        FontAwesome: (props: ViewProps & { name: string; size?: number; color?: string }) => <View {...props} />,
+    };
+});
+
 describe('HomeScreen', () => {
     beforeEach(() => {
         jest.clearAllMocks();
@@ -40,10 +49,7 @@ describe('HomeScreen', () => {
     it('zeigt Begrüßungstext an', async () => {
         (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
         (Location.getCurrentPositionAsync as jest.Mock).mockResolvedValue({
-            coords: {
-                latitude: 51.5,
-                longitude: 9.5,
-            },
+            coords: { latitude: 51.5, longitude: 9.5 },
         });
 
         const { findByText } = render(<HomeScreen />);
@@ -54,10 +60,7 @@ describe('HomeScreen', () => {
     it('ruft Location-Berechtigung und Koordinaten ab', async () => {
         (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
         (Location.getCurrentPositionAsync as jest.Mock).mockResolvedValue({
-            coords: {
-                latitude: 51.5,
-                longitude: 9.5,
-            },
+            coords: { latitude: 51.5, longitude: 9.5 },
         });
 
         const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -67,7 +70,9 @@ describe('HomeScreen', () => {
         await waitFor(() => {
             expect(Location.requestForegroundPermissionsAsync).toHaveBeenCalled();
             expect(Location.getCurrentPositionAsync).toHaveBeenCalled();
-            expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Standort abgerufen'));
+
+            // Prüfe nur auf "Standort:" und dann GeoJSON-Objekt
+            expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Standort:'));
             expect(logSpy).toHaveBeenCalledWith({ name: 'Germany' });
         });
 

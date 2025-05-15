@@ -1,8 +1,10 @@
 appId: com.anonymous.ineedhelp
 name: Delete personal data
 ---
-- tapOn: UserData
+- tapOn:
+      id: 'userIcon'
 - tapOn: Löschen
 - tapOn: Ja
 - assertVisible: 'Daten gelöscht'
 - tapOn: OK
+- tapOn: Speichern
