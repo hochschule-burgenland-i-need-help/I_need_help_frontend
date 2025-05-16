@@ -1,7 +1,6 @@
 appId: com.anonymous.ineedhelp
 name: Save personal data
 ---
-- tapOn: 'Name'
 - retry:
       maxRetries: 2
       commands:
@@ -22,8 +21,5 @@ name: Save personal data
 - scrollUntilVisible:
       element: Speichern
       direction: DOWN
-- retry:
-      maxRetries: 3
-      commands:
-          - tapOn: 'Speichern'
-          - assertVisible: 'Die Daten wurden gespeichert!'
+- doubleTapOn: 'Speichern'
+- assertVisible: 'Die Daten wurden gespeichert!'
