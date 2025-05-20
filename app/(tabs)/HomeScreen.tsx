@@ -7,6 +7,7 @@ import { booleanPointInPolygon, point } from '@turf/turf';
 import countries from '../../constants/custom.geo.json';
 import { Feature, Polygon, MultiPolygon } from 'geojson';
 import { FontAwesome } from '@expo/vector-icons';
+import { useUserName } from '@/hooks/useUserName';
 
 const LogoImage = require('@/assets/images/i_need_help_splash.jpg');
 
@@ -14,6 +15,8 @@ const HomeScreen = () => {
     const router = useRouter();
     const [, setErrorMsg] = useState<string | null>(null);
     const [, setLocation] = useState<Location.LocationObjectCoords | null>(null);
+
+    const name = useUserName();
 
     const getCountryFromCoords = (latitude: number, longitude: number) => {
         const pt = point([longitude, latitude]);
@@ -48,9 +51,9 @@ const HomeScreen = () => {
         })();
     }, []);
 
-    const routeRettung = async () => router.replace('/(tabs)/HomeScreen');
-    const routeFeuerwehr = async () => router.replace('/(tabs)/HomeScreen');
-    const routePolizei = async () => router.replace('/(tabs)/HomeScreen');
+    const routeRettung = async () => router.replace('/(tabs)/BlueLightButtonAmbulance');
+    const routeFeuerwehr = async () => router.replace('/(tabs)/BlueLightButtonFireDepartment');
+    const routePolizei = async () => router.replace('/(tabs)/BlueLightButtonPolice');
     const routeEmergency = async () => router.replace('/(modals)/EmergencyScreen');
 
     return (
@@ -60,15 +63,15 @@ const HomeScreen = () => {
             </View>
             <View style={styles.container}>
                 <View style={styles.profileContainer}>
-                    <Text style={styles.greeting}>Hallo, Max Mustermann!</Text>
+                    <Text style={styles.greeting}>Hallo, {name || 'Gast'}!</Text>
                     <TouchableOpacity onPress={() => router.push('/(tabs)/PersonalDataScreen')}>
                         <FontAwesome name="user" size={26} color="#000" testID="UserIcon" />
                     </TouchableOpacity>
                 </View>
                 <View style={styles.button}>
-                    <Button theme="third" label="Rettung 🚑" onPress={routeRettung} />
+                    <Button theme="fourth" label="Rettung 🚑" onPress={routeRettung} />
                     <Button theme="primary" label="Polizei 🚓" onPress={routePolizei} />
-                    <Button theme="fourth" label="Feuerwehr 🚒" onPress={routeFeuerwehr} />
+                    <Button theme="third" label="Feuerwehr 🚒" onPress={routeFeuerwehr} />
                 </View>
             </View>
             <View style={[styles.button, { marginBottom: 20 }]}>

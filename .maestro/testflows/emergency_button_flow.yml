@@ -1,0 +1,6 @@
+appId: com.anonymous.ineedhelp
+name: Delete personal data
+---
+- tapOn: 'Rettung 🚑'
+- tapOn:
+      id: 'ArrowLeft'

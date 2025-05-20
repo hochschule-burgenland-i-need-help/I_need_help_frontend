@@ -10,6 +10,10 @@ jest.mock('expo-router', () => ({
     }),
 }));
 
+jest.mock('@/hooks/useUserName', () => ({
+    useUserName: () => 'Max Mustermann',
+}));
+
 jest.mock('expo-location');
 
 jest.mock('@/constants/custom.geo.json', () => ({
