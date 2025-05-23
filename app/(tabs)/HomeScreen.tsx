@@ -15,6 +15,13 @@ const HomeScreen = () => {
     const router = useRouter();
     const [, setErrorMsg] = useState<string | null>(null);
     const [, setLocation] = useState<Location.LocationObjectCoords | null>(null);
+    const [specificEmergencyNumbers, setSpecificEmergencyNumbers] = useState<EmergencyNumbers>(null);
+
+    type EmergencyNumbers = {
+        police?: string;
+        ambulance?: string;
+        fire?: string;
+    } | null;
 
     const name = useUserName();
 
@@ -23,8 +30,17 @@ const HomeScreen = () => {
         for (const feature of countries.features) {
             const geoFeature = feature as Feature<Polygon | MultiPolygon>;
             if (booleanPointInPolygon(pt, geoFeature)) {
-                return geoFeature.properties;
+                return geoFeature.properties?.iso_a2_eh;
             }
+        }
+    };
+    const emergencyNumbers = require('../../constants/emergencyNumbers.json');
+    const getEmergencyNumbers = (countryCode: string) => {
+        if (emergencyNumbers[countryCode]) {
+            return emergencyNumbers[countryCode];
+        } else {
+            console.log(`Standort: Keine Notrufnummern für das Land mit Code ${countryCode} gefunden.`);
+            return emergencyNumbers['DEFAULT'];
         }
     };
 
@@ -42,8 +58,10 @@ const HomeScreen = () => {
                     accuracy: Location.Accuracy.High,
                 });
                 setLocation(currentLocation.coords);
-                console.log(`Standort: ${currentLocation.coords.latitude}, ${currentLocation.coords.longitude}`);
-                console.log(getCountryFromCoords(currentLocation.coords.latitude, currentLocation.coords.longitude));
+                const country = getCountryFromCoords(currentLocation.coords.latitude, currentLocation.coords.longitude);
+
+                const emergencyData = getEmergencyNumbers(country);
+                setSpecificEmergencyNumbers(emergencyData);
             } catch (error) {
                 const errorMessage = (error as Error).message;
                 setErrorMsg(`Fehler beim Abrufen des Standorts: ${errorMessage}`);
@@ -69,9 +87,9 @@ const HomeScreen = () => {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.button}>
-                    <Button theme="fourth" label="Rettung 🚑" onPress={routeRettung} />
-                    <Button theme="primary" label="Polizei 🚓" onPress={routePolizei} />
-                    <Button theme="third" label="Feuerwehr 🚒" onPress={routeFeuerwehr} />
+                    <Button theme="fourth" label={`Rettung ${specificEmergencyNumbers?.ambulance || ''} 🚑 `} onPress={routeRettung} />
+                    <Button theme="primary" label={`Polizei ${specificEmergencyNumbers?.police || ''} 🚓 `} onPress={routePolizei} />
+                    <Button theme="third" label={`Feuerwehr${specificEmergencyNumbers?.fire || ''} 🚒 `} onPress={routeFeuerwehr} />
                 </View>
             </View>
             <View style={[styles.button, { marginBottom: 20 }]}>
