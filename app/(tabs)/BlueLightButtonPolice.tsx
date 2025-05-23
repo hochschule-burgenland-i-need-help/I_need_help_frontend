@@ -8,6 +8,9 @@ import countries from '../../constants/custom.geo.json';
 import { Feature, Polygon, MultiPolygon } from 'geojson';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import emergencyNumbers from '../../constants/emergencyNumbers.json';
+import { LocationInfo } from '@/lib/location_info';
+import { findDepartment } from '@/lib/find_department';
+import { Department } from '@/lib/osm/overpass_api';
 
 const LogoImage = require('@/assets/images/i_need_help_splash.jpg');
 
@@ -16,6 +19,9 @@ const HomeScreen = () => {
     const [, setErrorMsg] = useState<string | null>(null);
     const [, setLocation] = useState<Location.LocationObjectCoords | null>(null);
     const [countryCode, setCountryCode] = useState<string>('DEFAULT');
+    const [departmentInfo, setDepartmentInfo] = useState<LocationInfo | null>(null);
+    const [loadErrorDepartment, setLoadErrorDepartment] = useState<boolean>(false);
+    const [loadingDepartment, setLoadingDepartment] = useState<boolean>(true);
 
     type EmergencyInfo = { ambulance?: string; fire?: string; police?: string; note?: string };
     const [emergencyInfo, setEmergencyInfo] = useState<EmergencyInfo>(emergencyNumbers['DEFAULT']);
@@ -27,6 +33,36 @@ const HomeScreen = () => {
             if (booleanPointInPolygon(pt, geoFeature)) {
                 return geoFeature.properties;
             }
+        }
+    };
+
+    const writeName = () => {
+        if (loadingDepartment === true) {
+            return 'load ...';
+        } else if (loadErrorDepartment === true || departmentInfo === null) {
+            return 'error';
+        } else {
+            return departmentInfo.name;
+        }
+    };
+
+    const writeCity = () => {
+        if (loadingDepartment === true) {
+            return 'load ...';
+        } else if (loadErrorDepartment === true || departmentInfo === null) {
+            return 'error';
+        } else {
+            return departmentInfo.city + ', ' + departmentInfo.postcode;
+        }
+    };
+
+    const writeStreet = () => {
+        if (loadingDepartment === true) {
+            return 'load ...';
+        } else if (loadErrorDepartment === true || departmentInfo === null) {
+            return 'error';
+        } else {
+            return departmentInfo.street + ' ' + departmentInfo.house;
         }
     };
 
@@ -42,6 +78,14 @@ const HomeScreen = () => {
                     accuracy: Location.Accuracy.High,
                 });
                 setLocation(coords);
+
+                const departmentResult = await findDepartment(coords.latitude, coords.longitude, Department.Police);
+                setLoadingDepartment(false);
+                if (departmentResult === null || departmentResult.length === 0) {
+                    setLoadErrorDepartment(true);
+                    console.log('set error');
+                }
+                setDepartmentInfo(departmentResult?.[0] ?? null);
 
                 const locationInfo = getCountryFromCoords(coords.latitude, coords.longitude);
 
@@ -89,12 +133,14 @@ const HomeScreen = () => {
 
                 <Text style={[styles.label, { marginTop: 16 }]}>Nächste Station</Text>
 
-                {/* TODO: muss dynamisch gesetzt werden! */}
-                <Text>
-                    <Text style={styles.label}>Stadt:</Text> Wien, 1010
+                <Text testID="testName">
+                    <Text style={styles.label}>Name:</Text> {writeName()}
                 </Text>
-                <Text>
-                    <Text style={styles.label}>Straße:</Text> Ringstrasse 2
+                <Text testID="testCity">
+                    <Text style={styles.label}>Stadt:</Text> {writeCity()}
+                </Text>
+                <Text testID="testStreet">
+                    <Text style={styles.label}>Straße:</Text> {writeStreet()}
                 </Text>
 
                 {countryCode === 'DEFAULT' && emergencyNumbers['DEFAULT'].note && <Text style={styles.note}>{emergencyNumbers['DEFAULT'].note}</Text>}

@@ -101,3 +101,81 @@ For installing the emulator follow the instructions [here](https://docs.expo.dev
 | **Graphics acceleration** | Automatic                     |
 | **RAM**                   | 4 GB                          |
 | **Default boot**          | Quick                         |
+
+## API Modules
+
+This project integrates two geospatial data APIs to find and enrich nearby emergency service locations based on OpenStreetMap data.
+
+- Overpass API (OSM)
+- Photon API (Geocoding)
+
+### Overpass API
+
+Retrieves nearby police stations, fire stations, hospitals, or ambulance points using the Overpass API for OSM.
+
+**Function:** findNearestDepartment(...)
+
+```ts
+findNearestDepartment(
+  latitude: number,
+  longitude: number,
+  department: Department,
+  maxRadius?: number,
+  step?: number
+): Promise<OverpassElement[] | null>
+
+```
+
+**Parameters:**
+
+- latitude / longitude: Your current GPS coordinates
+- department: Type of service (Police, Fire, Ambulance)
+- maxRadius: Maximum search radius in meters (default: 20,000)
+- step: Incremental step per retry (default: 2,000)
+
+**Returns:** Array of OverpassElement or null if nothing found.
+**Behavior:** Starts at small radius and expands until results are found or max radius is reached.
+
+### Photon API
+
+Performs reverse geocoding via Photon API (Komoot) to resolve GPS coordinates into human-readable addresses.
+
+**Function:** reverseGeocode(...)
+
+```ts
+reverseGeocode(lat: number, lon: number): Promise<AddressInfo | null>
+```
+
+**Parameters:**
+
+- lat / lon: GPS coordinates
+
+**Returns:** AddressInfo object or null
+
+Used when no address is provided directly from Overpass results.
+
+### Helper Function
+
+**Function:** toLocationInfo(...)
+
+Located in location_info.ts, this helper function transforms an OverpassElement into a LocationInfo object, including address enrichment using Photon if necessary.
+
+```ts
+toLocationInfo(e: OverpassElement): Promise<LocationInfo | null>
+```
+
+### Data Models
+
+- OverpassElement: Raw location data from Overpass API
+- AddressInfo: Address details from Photon API
+- LocationInfo: Unified model with resolved name, coordinates, and address string
+
+### Example Usage
+
+```ts
+const elements = await findNearestDepartment(48.2082, 16.3738, Department.Ambulance);
+if (elements) {
+    const enriched = await Promise.all(elements.map(toLocationInfo));
+    console.log(enriched);
+}
+```

@@ -68,7 +68,7 @@ describe('Emergency Service Screens', () => {
 
     it('zeigt Polizeinummer korrekt an', async () => {
         const PoliceComponent = require('@/app/(tabs)/BlueLightButtonPolice').default;
-        await setupTest(PoliceComponent, '110');
+        await setupTest(PoliceComponent, '112');
     });
 
     it('zeigt Rettungsnummer korrekt an', async () => {
@@ -78,10 +78,10 @@ describe('Emergency Service Screens', () => {
 
     it('öffnet Telefonnummer beim Klick auf Anrufen', async () => {
         const PoliceComponent = require('@/app/(tabs)/BlueLightButtonPolice').default;
-        const { getByText } = await setupTest(PoliceComponent, '110');
+        const { getByText } = await setupTest(PoliceComponent, '112');
         const callButton = getByText('Anrufen');
         fireEvent.press(callButton);
-        expect(Linking.openURL).toHaveBeenCalledWith('tel:110');
+        expect(Linking.openURL).toHaveBeenCalledWith('tel:112');
     });
 
     it('zeigt EU-Fallback bei unbekanntem Land', async () => {
@@ -92,5 +92,44 @@ describe('Emergency Service Screens', () => {
         const { findByText } = render(<RescueComponent />);
         const fallbackText = await findByText(/112 ist die EU-weite Notrufnummer/);
         expect(fallbackText).toBeTruthy();
+    });
+
+    it('zeigt fallback Info bei Standortfehler', async () => {
+        (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+        (Location.getCurrentPositionAsync as jest.Mock).mockRejectedValue(new Error('Location error'));
+
+        const FireComponent = require('@/app/(tabs)/BlueLightButtonFireDepartment').default;
+        const { findByText } = render(<FireComponent />);
+        const fallbackText = await findByText(/112 ist die EU-weite Notrufnummer/);
+        expect(fallbackText).toBeTruthy();
+    });
+
+    it('zeigt Adresse korrekt an, wenn Department verfügbar ist', async () => {
+        jest.doMock('@/lib/find_department', () => ({
+            findDepartment: async () => [
+                {
+                    name: 'Teststation',
+                    city: 'Musterstadt',
+                    postcode: '12345',
+                    street: 'Musterstraße',
+                    house: '1A',
+                },
+            ],
+        }));
+
+        (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+        (Location.getCurrentPositionAsync as jest.Mock).mockResolvedValue({
+            coords: { latitude: 51.5, longitude: 9.5 },
+        });
+
+        const PoliceComponent = require('@/app/(tabs)/BlueLightButtonPolice').default;
+        const { getByTestId } = render(<PoliceComponent />);
+
+        // Warte auf Adresse
+        waitFor(() => {
+            expect(getByTestId('testName').props.children.join('')).toContain('Teststation');
+            expect(getByTestId('testCity').props.children.join('')).toContain('Musterstadt, 12345');
+            expect(getByTestId('testStreet').props.children.join('')).toContain('Musterstraße 1A');
+        });
     });
 });
