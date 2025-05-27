@@ -11,6 +11,7 @@ import emergencyNumbers from '../../constants/emergencyNumbers.json';
 import { LocationInfo } from '@/lib/location_info';
 import { findDepartment } from '@/lib/find_department';
 import { Department } from '@/lib/osm/overpass_api';
+import MapView, { Marker } from 'react-native-maps';
 
 const LogoImage = require('@/assets/images/i_need_help_splash.jpg');
 
@@ -81,13 +82,11 @@ const HomeScreen = () => {
 
                 const departmentResult = await findDepartment(coords.latitude, coords.longitude, Department.Fire);
                 setLoadingDepartment(false);
-                console.log('loading finished');
                 if (departmentResult === null || departmentResult.length === 0) {
                     setLoadErrorDepartment(true);
                     console.log('set error');
                 }
                 setDepartmentInfo(departmentResult?.[0] ?? null);
-                console.log(departmentResult?.[0] ?? 'null');
 
                 const locationInfo = getCountryFromCoords(coords.latitude, coords.longitude);
 
@@ -147,6 +146,36 @@ const HomeScreen = () => {
                 {countryCode === 'DEFAULT' && emergencyNumbers['DEFAULT'].note && <Text style={styles.note}>{emergencyNumbers['DEFAULT'].note}</Text>}
             </View>
 
+            <View style={styles.mapContainer}>
+                <MapView
+                    zoomEnabled={true}
+                    zoomControlEnabled={true}
+                    scrollEnabled={true}
+                    loadingEnabled={true}
+                    style={styles.map}
+                    region={
+                        departmentInfo
+                            ? {
+                                  latitude: departmentInfo.lat,
+                                  longitude: departmentInfo.lon,
+                                  latitudeDelta: 0.02,
+                                  longitudeDelta: 0.02,
+                              }
+                            : undefined
+                    }>
+                    <Marker
+                        title={departmentInfo ? departmentInfo.name : ''}
+                        coordinate={
+                            departmentInfo
+                                ? {
+                                      latitude: departmentInfo.lat,
+                                      longitude: departmentInfo.lon,
+                                  }
+                                : { latitude: 0, longitude: 0 }
+                        }></Marker>
+                </MapView>
+            </View>
+
             <View style={styles.button}>
                 <Button theme="third" label="Navigieren" />
             </View>
@@ -162,7 +191,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     container: {
-        flex: 1,
+        flex: 1 / 2,
         padding: 24,
     },
     logoContainer: {
@@ -170,6 +199,14 @@ const styles = StyleSheet.create({
         height: 130,
         backgroundColor: '#e71d1d',
         alignItems: 'center',
+    },
+    mapContainer: {
+        flex: 1 / 2,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
+    map: {
+        ...StyleSheet.absoluteFillObject,
     },
     logo: {
         width: 100,
