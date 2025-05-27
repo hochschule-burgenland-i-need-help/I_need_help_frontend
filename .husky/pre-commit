@@ -3,3 +3,35 @@ npm audit --audit-level=critical
 npx secretlint "**/*.{js,jsx,ts,tsx}"
 npm run test
 npm run e2e
+
+echo "Entferne API-Key aus AndroidManifest.xml..."
+
+# Plattformabhängige API-Key-Entfernung
+if command -v pwsh >/dev/null 2>&1 || command -v powershell >/dev/null 2>&1; then
+  # Windows / PowerShell
+  if command -v pwsh >/dev/null 2>&1; then
+    SHELL_PW=pwsh
+  else
+    SHELL_PW=powershell
+  fi
+
+  $SHELL_PW -Command "
+    \$file = 'android/app/src/main/AndroidManifest.xml'
+    \$lines = Get-Content \$file | Where-Object { \$_ -notmatch 'com.google.android.geo.API_KEY' }
+    Set-Content \$file \$lines
+  "
+else
+  # macOS/Linux
+  sed -i '' '/com.google.android.geo.API_KEY/d' android/app/src/main/AndroidManifest.xml
+fi
+
+# Validierung: ist der API-Key jetzt wirklich weg?
+if grep -q 'com.google.android.geo.API_KEY' android/app/src/main/AndroidManifest.xml; then
+  echo "API-Key wurde NICHT korrekt entfernt. Commit wird abgebrochen."
+  exit 1
+else
+  echo "API-Key erfolgreich entfernt."
+fi
+
+# Datei neu zum Commit hinzufügen
+git add android/app/src/main/AndroidManifest.xml
