@@ -72,7 +72,7 @@ const HomeScreen = () => {
     const routeRettung = async () => router.replace('/(tabs)/BlueLightButtonAmbulance');
     const routeFeuerwehr = async () => router.replace('/(tabs)/BlueLightButtonFireDepartment');
     const routePolizei = async () => router.replace('/(tabs)/BlueLightButtonPolice');
-    const routeEmergency = async () => router.replace('/(modals)/EmergencyScreen');
+    const routeEmergency = async () => router.replace('/(tabs)/EmergencyScreen');
 
     return (
         <View style={styles.screenContainer}>

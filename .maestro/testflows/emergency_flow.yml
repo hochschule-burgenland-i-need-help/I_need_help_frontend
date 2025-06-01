@@ -3,7 +3,7 @@ name: Check Emergency Screen
 ---
 - tapOn: 'SOS'
 - assertVisible: 'Max Mustermann'
-- assertVisible: '30'
+- assertVisible: '25'
 - assertVisible: '65.5 kg'
 - assertVisible: '175 cm'
 - assertVisible: 'A+'

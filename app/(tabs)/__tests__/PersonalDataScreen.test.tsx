@@ -12,6 +12,12 @@ jest.mock('expo-router', () => ({
     useRouter: jest.fn(),
 }));
 
+jest.mock('expo-font', () => ({
+    loadAsync: jest.fn(),
+    isLoaded: jest.fn().mockReturnValue(true),
+    isLoading: jest.fn().mockReturnValue(false),
+}));
+
 jest.mock('@/components/ui/TabBarBackground', () => ({
     useBottomTabOverflow: () => 16,
 }));
@@ -74,7 +80,7 @@ describe('PersonalDataScreen', () => {
 
     it('renders all input fields', () => {
         const { getByTestId } = render(<PersonalDataScreen />);
-        ['inputName', 'inputAge', 'inputWeight', 'inputHeight', 'inputBloodGroup'].forEach((id) => expect(getByTestId(id)).toBeTruthy());
+        ['inputName', 'inputDate', 'inputWeight', 'inputHeight', 'inputBloodGroup'].forEach((id) => expect(getByTestId(id)).toBeTruthy());
     });
 
     it('shows error on invalid name input', () => {
@@ -94,25 +100,6 @@ describe('PersonalDataScreen', () => {
         const { getByTestId, queryByTestId } = render(<PersonalDataScreen />);
         fireEvent.changeText(getByTestId('inputName'), 'Anna-Lena');
         expect(queryByTestId('errorName')).toBeNull();
-    });
-
-    it('shows error when age is non-numeric', () => {
-        const { getByTestId } = render(<PersonalDataScreen />);
-        fireEvent.changeText(getByTestId('inputAge'), 'abc');
-        expect(getByTestId('errorAge')).toHaveTextContent('Nur ganze Zahlen erlaubt.');
-    });
-
-    it('shows error when age is too large', () => {
-        const { getByTestId } = render(<PersonalDataScreen />);
-        fireEvent.changeText(getByTestId('inputAge'), '250');
-        expect(getByTestId('errorAge')).toHaveTextContent('Das maximale Alter ist 200 Jahre.');
-    });
-
-    it('shows error on invalid age input', () => {
-        const { getByTestId } = render(<PersonalDataScreen />);
-        fireEvent.changeText(getByTestId('inputAge'), '2');
-        expect(getByTestId('errorAge')).toBeTruthy();
-        expect(getByTestId('errorAge')).toHaveTextContent('Das Mindestalter ist 5 Jahre.');
     });
 
     it('shows error when weight is not a number', () => {
@@ -200,11 +187,11 @@ describe('PersonalDataScreen', () => {
     it('resets all errors on Abbruch button press', () => {
         const { getByTestId, getByText, queryByTestId } = render(<PersonalDataScreen />);
 
-        fireEvent.changeText(getByTestId('inputAge'), '2');
-        expect(getByTestId('errorAge')).toBeTruthy();
+        fireEvent.changeText(getByTestId('inputName'), 'M');
+        expect(getByTestId('errorName')).toBeTruthy();
 
         fireEvent.press(getByText('Abbruch'));
-        expect(queryByTestId('errorAge')).toBeNull();
+        expect(queryByTestId('errorName')).toBeNull();
     });
 
     it('saves data successfully', async () => {
@@ -212,7 +199,6 @@ describe('PersonalDataScreen', () => {
         const { getByTestId, getByText } = render(<PersonalDataScreen />);
 
         fireEvent.changeText(getByTestId('inputName'), 'Max Mustermann');
-        fireEvent.changeText(getByTestId('inputAge'), '25');
         fireEvent.changeText(getByTestId('inputWeight'), '80');
         fireEvent.changeText(getByTestId('inputHeight'), '180');
         fireEvent(getByTestId('inputBloodGroup'), 'onValueChange', 'A+');
@@ -275,7 +261,7 @@ describe('PersonalDataScreen', () => {
     it('loads and decrypts data on mount', async () => {
         const userData = {
             name: 'Lisa',
-            age: '30',
+            date: '2000-01-01T00:00:00.000Z',
             weight: '65',
             height: '175',
             bloodGroup: 'AB+',
@@ -292,7 +278,7 @@ describe('PersonalDataScreen', () => {
 
         await waitFor(() => {
             expect(getByTestId('inputName')).toHaveProp('value', 'Lisa');
-            expect(getByTestId('inputAge')).toHaveProp('value', '30');
+            expect(getByTestId('inputDate')).toHaveProp('value', '01.01.2000');
             expect(getByTestId('inputWeight')).toHaveProp('value', '65');
             expect(getByTestId('inputHeight')).toHaveProp('value', '175');
         });
