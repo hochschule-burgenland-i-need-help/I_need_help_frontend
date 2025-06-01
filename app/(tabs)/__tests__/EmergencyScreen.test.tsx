@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, waitFor, act, fireEvent } from '@testing-library/react-native';
-import EmergencyScreen from '@/app/(modals)/EmergencyScreen';
+import EmergencyScreen from '@/app/(tabs)/EmergencyScreen';
 import * as FileSystem from 'expo-file-system';
 import { decryptData } from '@/utils/encryption';
 import { useRouter } from 'expo-router';
@@ -59,7 +59,7 @@ describe('EmergencyScreen', () => {
     it('renders all labels correctly', async () => {
         const userData = {
             name: 'Max Mustermann',
-            age: '30',
+            date: new Date(new Date().getFullYear() - 25, new Date().getMonth(), new Date().getDay()),
             weight: '70',
             height: '180',
             bloodGroup: 'A+',
@@ -85,7 +85,7 @@ describe('EmergencyScreen', () => {
         await waitFor(() => {
             expect(getByTestId('title').props.children).toBe('SOS');
             expect(getByTestId('name').props.children).toBe('Max Mustermann');
-            expect(getByTestId('age').props.children).toBe('30');
+            expect(getByTestId('age').props.children).toBe(25);
             expect(getByTestId('weight').props.children).toStrictEqual(['70', ' kg']);
             expect(getByTestId('height').props.children).toStrictEqual(['180', ' cm']);
             expect(getByTestId('bloodGroup').props.children).toBe('A+');

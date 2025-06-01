@@ -28,7 +28,6 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="myapp"/>
         <data android:scheme="com.anonymous.ineedhelp"/>
-        <data android:scheme="com.stx85.ineedhelp"/>
         <data android:scheme="ineedhelp"/>
       </intent-filter>
     </activity>

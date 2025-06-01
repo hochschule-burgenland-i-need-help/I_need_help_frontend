@@ -6,8 +6,15 @@ name: Save personal data
       commands:
           - tapOn: 'Name'
 - inputText: 'Max Mustermann'
-- tapOn: 'Alter'
-- inputText: '30'
+- tapOn:
+      id: 'inputDateIcon'
+      waitToSettleTimeoutMs: 3000
+- tapOn:
+      below: 'Speichern'
+      waitToSettleTimeoutMs: 1000
+- tapOn: 'DD.MM.YYYY'
+- inputText: '01012000'
+- tapOn: 'Speichern'
 - tapOn: 'Gewicht in Kg'
 - inputText: '65.5'
 - scroll
