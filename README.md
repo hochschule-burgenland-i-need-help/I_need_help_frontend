@@ -1,6 +1,109 @@
-# I_need_help_frontend
+# I need help (Android Mobile App)
 
 I need help Frontend Project BSWE@hochschule-burgenland
+
+---
+
+## Prerequisite
+
+Following programs are necessary for developing and building the application:
+
+| Name                         | Version  | Comment                                                                                               |
+| ---------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| GIT                          | v2.47+   | https://git-scm.com/                                                                                  |
+| Java JDK                     | 21       | https://www.oracle.com/java/technologies/downloads/                                                   |
+| Gradle                       | 8.10.2   | https://gradle.org/install/                                                                           |
+| node.js                      | v22.14.0 | https://nodejs.org/en/download or use fnm (Windows), nvm (Linux)                                      |
+| npm                          | v10.9.2  | https://nodejs.org/en/download or use fnm (Windows), nvm (Linux)                                      |
+| Maestro                      | v1.39.13 | https://docs.maestro.dev/getting-started/installing-maestro                                           |
+| Android Studio               | 2024.3.2 | (Optional) Needed for the Emulator. https://developer.android.com/studio?hl=de                        |
+| Visual Studio Code           | 1.100.2  | https://code.visualstudio.com/download                                                                |
+| Google Maps Platform API Key |          | https://developers.google.com/maps/documentation/android-sdk/get-api-key?hl=de (Maps SDK for Android) |
+
+### Setting Up Android Studio
+
+https://docs.expo.dev/get-started/set-up-your-environment/?platform=android&device=physical&mode=development-build&buildEnv=local#set-up-an-android-device-with-a-development-build
+
+You have to install via the SDK Manager of Android Studio following packages:
+
+**Android SDK > SDK Platforms:**
+
+- Android 15.0 ("VanillaIceCream")
+
+**Android SDK > SDK Tools:**
+
+- Android SDK Build-Tools 36
+- NDK (Side by Side)
+- Android SDK Command-line Tools
+- CMake
+- Android Emulator
+- Android SDK Platform-Tools
+
+Copy or remember the path listed in the box that says Android SDK Location.
+
+First, set the environment variable `ANDROID_HOME` with path of the Android SDK location as value.
+
+Second, add the path `[ANDROID_HOME]/emulator` and `[ANDROID_HOME]/platform-tools` to your `PATH` environment variable.
+
+Finally, make sure that you can run `adb` from the PowerShell. For example, run the `adb --version` to see which version of the `adb` your system is running.
+
+#### Emulator
+
+Creat an emulator with following configuration:
+
+| Name                 | Value                         |
+| -------------------- | ----------------------------- |
+| **Form Factor**      | Medium Phone                  |
+| **API**              | 35 - Android 15               |
+| **Service**          | Google Play Store             |
+| **System Image**     | Depending on your host system |
+| **Internal Storage** | 4 GB                          |
+| **Default boot**     | Quick                         |
+
+### Recommended Visual Studio Extensions
+
+| Name            | Publisher | Comment |
+| --------------- | --------- | ------- |
+| Expo Tools      | Expo      |         |
+| IntelliCode     | Microsoft |         |
+| Gradle for Java | Microsoft |         |
+|                 |           |         |
+
+---
+
+## Get Started
+
+Download the repository:
+
+```shell
+# clone repository
+git clone https://github.com/hochschule-burgenland-i-need-help/I_need_help_frontend.git
+
+# change directory
+cd I_need_help_frontend
+```
+
+Install modules:
+
+```shell
+# use npm to install modules
+npm install
+```
+
+> 💡 Start the emulator
+> or connect Android device (enabled USB-Debugging)
+
+> [!TIP]
+> If you get the error message \
+> _SDK location not found. Define a valid SDK location with an ANDROID_HOME environment variable or by setting the sdk.dir path in your project's local properties file_ \
+> add `sdk.dir=[path to Android SDK]` to the file `android/local.properties`
+
+Running the application locally:
+
+```shell
+# run application
+npm run android
+```
 
 ## Testing
 
@@ -83,24 +186,6 @@ To ensure **no sensitive information** ever makes it into the repo, we use Secre
 }
 ]
 }
-
-## Android Emulator
-
-For installing the emulator follow the instructions [here](https://docs.expo.dev/workflow/android-studio-emulator/).
-
-### Emulator Config
-
-| Name                      | Value                         |
-| ------------------------- | ----------------------------- |
-| **Form Factor**           | Medium Phone                  |
-| **API**                   | 35 - Android 15               |
-| **Service**               | AOSP - Android Open Source    |
-| **System Image**          | Depending on your host system |
-| **Cpu Cores**             | 4                             |
-| **Internal Storage**      | 4 GB                          |
-| **Graphics acceleration** | Automatic                     |
-| **RAM**                   | 4 GB                          |
-| **Default boot**          | Quick                         |
 
 ## API Modules
 
