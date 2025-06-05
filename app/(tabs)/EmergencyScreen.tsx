@@ -36,7 +36,7 @@ const EmergencyScreen = () => {
     const userDataFile = FileSystem.documentDirectory + 'user_data.json';
 
     const [name, setName] = useState('');
-    const [age, setAge] = useState('');
+    const [date, setDate] = useState<Date | undefined>(undefined);
     const [weight, setWeight] = useState('');
     const [height, setHeight] = useState('');
     const [bloodGroup, setBloodGroup] = useState('');
@@ -87,7 +87,7 @@ const EmergencyScreen = () => {
             const data = JSON.parse(decrypted);
 
             setName(data.name || '');
-            setAge(data.age?.toString() || '');
+            setDate(data.date ? new Date(data.date) : undefined);
             setWeight(data.weight?.toString() || '');
             setHeight(data.height?.toString() || '');
             setBloodGroup(data.bloodGroup || '');
@@ -101,6 +101,17 @@ const EmergencyScreen = () => {
                 visibilityTime: 4000,
             });
         }
+    };
+
+    const calculateAge = (birthDate: Date) => {
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
     };
 
     /**
@@ -137,61 +148,65 @@ const EmergencyScreen = () => {
                 <Image source={LogoImage} style={styles.logo} />
             </View>
             <View testID="bodyContainer" style={styles.bodyContainer}>
-                <Text testID="title" style={styles.title}>
+                <Text testID="title" accessible={true} accessibilityLabel="SOS" style={styles.title}>
                     SOS
                 </Text>
 
                 <View style={styles.rowLabel}>
-                    <Text testID="labelName" style={styles.textLabel}>
+                    <Text testID="labelName" accessible={true} accessibilityLabel="Name" style={styles.textLabel}>
                         Name
                     </Text>
                 </View>
                 <View style={styles.row}>
-                    <Text testID="name" style={styles.textField}>
+                    <Text testID="name" accessible={true} accessibilityLabel={name} style={styles.textField}>
                         {name}
                     </Text>
                 </View>
 
                 <View style={styles.rowLabel}>
-                    <Text testID="labelAge" style={styles.textLabel}>
+                    <Text testID="labelAge" accessible={true} accessibilityLabel="Alter" style={styles.textLabel}>
                         Alter
                     </Text>
                 </View>
                 <View style={styles.row}>
-                    <Text testID="age" style={styles.textField}>
-                        {age}
+                    <Text
+                        testID="age"
+                        accessible={true}
+                        accessibilityLabel={date ? `&{calculateAge(date)}` : 'Alter nicht gesetzt'}
+                        style={styles.textField}>
+                        {date ? calculateAge(date) : ''}
                     </Text>
                 </View>
 
                 <View style={styles.rowLabel}>
-                    <Text testID="labelWeight" style={styles.textLabel}>
+                    <Text testID="labelWeight" accessible={true} accessibilityLabel="Gewicht" style={styles.textLabel}>
                         Gewicht
                     </Text>
                 </View>
                 <View style={styles.row}>
-                    <Text testID="weight" style={styles.textField}>
+                    <Text testID="weight" accessible={true} accessibilityLabel={weight + ' kg'} style={styles.textField}>
                         {weight} kg
                     </Text>
                 </View>
 
                 <View style={styles.rowLabel}>
-                    <Text testID="labelHeight" style={styles.textLabel}>
+                    <Text testID="labelHeight" accessible={true} accessibilityLabel="Größe" style={styles.textLabel}>
                         Größe
                     </Text>
                 </View>
                 <View style={styles.row}>
-                    <Text testID="height" style={styles.textField}>
+                    <Text testID="height" accessible={true} accessibilityLabel={height + ' cm'} style={styles.textField}>
                         {height} cm
                     </Text>
                 </View>
 
                 <View style={styles.rowLabel}>
-                    <Text testID="labelBloodGroup" style={styles.textLabel}>
+                    <Text testID="labelBloodGroup" accessible={true} accessibilityLabel="Blutgruppe" style={styles.textLabel}>
                         Blutgruppe
                     </Text>
                 </View>
                 <View style={styles.row}>
-                    <Text testID="bloodGroup" style={styles.textField}>
+                    <Text testID="bloodGroup" accessible={true} accessibilityLabel={bloodGroup} style={styles.textField}>
                         {bloodGroup}
                     </Text>
                 </View>

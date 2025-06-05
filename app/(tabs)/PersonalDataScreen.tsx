@@ -13,9 +13,14 @@ import Toast from 'react-native-toast-message';
 import { generateKeyIfNotExists, encryptData, decryptData } from '@/utils/encryption';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import { DatePickerModal, registerTranslation, de } from 'react-native-paper-dates';
+import { format } from 'date-fns';
+import { de as localeDe } from 'date-fns/locale';
 
 const LogoImage = require('@/assets/images/i_need_help_splash.jpg');
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', '0+', '0-'];
+
+registerTranslation('de', de);
 
 /**
  * PersonalDataScreen is a React Native screen component that allows users
@@ -31,17 +36,20 @@ export default function PersonalDataScreen() {
     const userDataFile = FileSystem.documentDirectory + 'user_data.json';
 
     const [name, setName] = useState('');
-    const [age, setAge] = useState('');
+    const [date, setDate] = useState<Date | undefined>(undefined);
     const [weight, setWeight] = useState('');
     const [height, setHeight] = useState('');
     const [bloodGroup, setBloodGroup] = useState('');
     const [errorName, setErrorName] = useState<string | null>(null);
-    const [errorAge, setErrorAge] = useState<string | null>(null);
     const [errorWeight, setErrorWeight] = useState<string | null>(null);
     const [errorHeight, setErrorHeight] = useState<string | null>(null);
     const [errorBloodGroup, setErrorBloodGroup] = useState<string | null>(null);
 
-    const hasErrors = [errorName, errorAge, errorWeight, errorHeight, errorBloodGroup].some((e) => e !== null);
+    const [open, setOpen] = useState(false);
+
+    const hasErrors = [errorName, errorWeight, errorHeight, errorBloodGroup].some((e) => e !== null);
+
+    const formattedDate = date ? format(date, 'dd.MM.yyyy', { locale: localeDe }) : '';
 
     const routeHome = async () => {
         router.replace('/(tabs)/HomeScreen');
@@ -63,29 +71,6 @@ export default function PersonalDataScreen() {
             setErrorName('Bitte gib einen gültigen Namen ein.');
         } else {
             setErrorName(null);
-        }
-    };
-
-    /**
-     * Validates the user's age input and updates state and error messages accordingly.
-     *
-     * @param {string} value - The age entered by the user. Must be a whole number between 5 and 200.
-     */
-    const validateAge = (value: string) => {
-        setAge(value);
-
-        const intVal = parseInt(value, 10);
-
-        if (!/^-?\d+$/.test(value)) {
-            setErrorAge('Nur ganze Zahlen erlaubt.');
-        } else if (isNaN(intVal)) {
-            setErrorAge('Ungültige Eingabe.');
-        } else if (intVal < 5) {
-            setErrorAge('Das Mindestalter ist 5 Jahre.');
-        } else if (intVal > 200) {
-            setErrorAge('Das maximale Alter ist 200 Jahre.');
-        } else {
-            setErrorAge(null);
         }
     };
 
@@ -161,7 +146,6 @@ export default function PersonalDataScreen() {
      */
     const resetErrors = () => {
         setErrorName(null);
-        setErrorAge(null);
         setErrorWeight(null);
         setErrorHeight(null);
         setErrorBloodGroup(null);
@@ -195,7 +179,7 @@ export default function PersonalDataScreen() {
             await FileSystem.deleteAsync(userDataFile, { idempotent: true });
             await AsyncStorage.clear();
             setName('');
-            setAge('');
+            setDate(undefined);
             setWeight('');
             setHeight('');
             setBloodGroup('');
@@ -218,7 +202,7 @@ export default function PersonalDataScreen() {
     const saveData = async (popup: boolean = true): Promise<boolean> => {
         const data = {
             name: name,
-            age: age,
+            date: date,
             weight: weight,
             height: height,
             bloodGroup: bloodGroup,
@@ -280,7 +264,7 @@ export default function PersonalDataScreen() {
             const data = JSON.parse(decrypted);
 
             setName(data.name || '');
-            setAge(data.age?.toString() || '');
+            setDate(data.date ? new Date(data.date) : undefined);
             setWeight(data.weight?.toString() || '');
             setHeight(data.height?.toString() || '');
             setBloodGroup(data.bloodGroup || '');
@@ -296,6 +280,15 @@ export default function PersonalDataScreen() {
         }
     };
 
+    /**
+     * Effect hook triggered when the screen gains focus.
+     *
+     * This ensures that the encryption key is initialized
+     * and any previously stored user data is loaded into the form state.
+     *
+     * Uses `generateKeyIfNotExists()` to ensure a key is present
+     * and `loadData()` to populate state from encrypted storage.
+     */
     useFocusEffect(
         useCallback(() => {
             (async () => {
@@ -303,6 +296,30 @@ export default function PersonalDataScreen() {
                 await loadData();
             })();
         }, [])
+    );
+
+    /**
+     * Callback function triggered when the date picker modal is dismissed without confirmation.
+     *
+     * This simply closes the modal without modifying the selected date.
+     */
+    const onDismissSingle = useCallback(() => {
+        setOpen(false);
+    }, [setOpen]);
+
+    /**
+     * Callback function triggered when the user confirms a date selection in the date picker modal.
+     *
+     * Sets the selected date in state and closes the modal.
+     *
+     * @param {{ date: Date }} params - The selected date wrapped in an object.
+     */
+    const onConfirmSingle = useCallback(
+        (params) => {
+            setOpen(false);
+            setDate(params.date);
+        },
+        [setOpen, setDate]
     );
 
     return (
@@ -339,32 +356,27 @@ export default function PersonalDataScreen() {
                         {errorName}
                     </Text>
                 )}
+
                 <View style={styles.inputRow}>
                     <PaperInput
-                        testID="inputAge"
-                        label="Alter"
-                        value={age}
-                        onChangeText={validateAge}
+                        testID="inputDate"
+                        label="Geburtstag"
+                        value={formattedDate}
+                        left={<PaperInput.Icon testID="inputDateIcon" icon="calendar" onPress={() => setOpen(true)} />}
+                        editable={false}
                         mode="flat"
-                        error={!!errorAge}
-                        keyboardType="numeric"
                         textColor="#444"
                         style={styles.inputField}
                     />
+                    <DatePickerModal locale="de" mode="single" visible={open} onDismiss={onDismissSingle} date={date} onConfirm={onConfirmSingle} />
                     <Pressable
                         onPress={() => {
-                            setAge('');
-                            setErrorAge(null);
+                            setDate(undefined);
                         }}
                         style={styles.clearIcon}>
                         <Text style={styles.clearText}>🗑️</Text>
                     </Pressable>
                 </View>
-                {errorAge && (
-                    <Text testID="errorAge" style={styles.errorText}>
-                        {errorAge}
-                    </Text>
-                )}
 
                 <View style={styles.inputRow}>
                     <PaperInput
@@ -461,7 +473,14 @@ export default function PersonalDataScreen() {
                     }}
                 />
                 <Button label="Löschen" theme="third" onPress={confirmDelete} disabled={false} />
-                <Button label="Abbruch" theme="secondary" onPress={resetErrors} />
+                <Button
+                    label="Abbruch"
+                    theme="secondary"
+                    onPress={() => {
+                        resetErrors();
+                        routeHome();
+                    }}
+                />
             </ThemedView>
         </ParallaxScrollView>
     );
