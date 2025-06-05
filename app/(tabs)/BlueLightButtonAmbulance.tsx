@@ -67,6 +67,20 @@ const HomeScreen = () => {
         }
     };
 
+    const openGoogleMaps = () => {
+        if (loadingDepartment === true) {
+            return 'load ...';
+        } else if (loadErrorDepartment === true || departmentInfo === null) {
+            return 'error';
+        } else {
+            const destination = encodeURIComponent(
+                departmentInfo.postcode + ' ' + departmentInfo.city + ',  ' + departmentInfo.street + ' ' + departmentInfo.house
+            );
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+            Linking.openURL(url).catch((err) => console.error('Fehler beim Öffnen von Google Maps', err));
+        }
+    };
+
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
@@ -179,7 +193,12 @@ const HomeScreen = () => {
             </View>
 
             <View style={styles.button}>
-                <Button theme="third" label="Navigieren" />
+                <Button
+                    theme="third"
+                    label={loadingDepartment ? 'Lädt...' : 'Navigieren'}
+                    disabled={loadingDepartment}
+                    onPress={loadingDepartment ? undefined : openGoogleMaps}
+                />
             </View>
         </View>
     );

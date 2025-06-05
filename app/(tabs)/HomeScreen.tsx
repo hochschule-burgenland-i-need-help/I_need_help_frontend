@@ -89,7 +89,7 @@ const HomeScreen = () => {
                 <View style={styles.button}>
                     <Button theme="fourth" label={`Rettung ${specificEmergencyNumbers?.ambulance || ''} 🚑 `} onPress={routeRettung} />
                     <Button theme="primary" label={`Polizei ${specificEmergencyNumbers?.police || ''} 🚓 `} onPress={routePolizei} />
-                    <Button theme="third" label={`Feuerwehr${specificEmergencyNumbers?.fire || ''} 🚒 `} onPress={routeFeuerwehr} />
+                    <Button theme="third" label={`Feuerwehr ${specificEmergencyNumbers?.fire || ''} 🚒 `} onPress={routeFeuerwehr} />
                 </View>
             </View>
             <View style={[styles.button, { marginBottom: 20 }]}>
